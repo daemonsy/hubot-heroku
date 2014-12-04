@@ -1,0 +1,27 @@
+{
+  "name": "hubot-heroku-commander",
+  "version": "0.0.1",
+  "description": "Let your team run heroku commands, but not have direct access to Heroku",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alphasights/hubot-heroku-commander"
+  },
+  "keywords": [
+    "Heroku",
+    "Hubot",
+    "commands"
+  ],
+  "author": "Damon Aw",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/alphasights/hubot-heroku-commander/issues"
+  },
+  "homepage": "https://github.com/alphasights/hubot-heroku-commander",
+  "dependencies": {
+    "heroku-client": "^1.9.0"
+  }
+}
