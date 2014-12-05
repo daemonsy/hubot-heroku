@@ -8,10 +8,13 @@
 #   HUBOT_HEROKU_API_KEY
 #
 # Commands:
-#   hubot releases <app> - 10 most recent releases of the app
-#   hubot rollback <app> <version> - Rollback to a release
-#   hubot restart <app>
-#   hubot migrate <app>
+#   hubot heroku releases <app> - 10 most recent releases of the app
+#   hubot heroku rollback <app> <version> - Rollback to a release
+#   hubot heroku restart <app>
+#   hubot heroku migrate <app>
+#   hubot heroku config:set <app> <key=value>
+#   hubot heroku config:unset <app> <key>
+#
 # Notes:
 #   Very alpha
 #
@@ -79,5 +82,33 @@ module.exports = (robot) ->
       if error
         msg.reply "There's an error migrating #{appName}. #{error.statusCode} - #{error.body.message}"
       else
-        msg.reply "Heroku: Running migrations for #{appName}."
-        msg.reply "Unfortunately I am not smart enough to tell you more...:no_mouth:"
+        msg.reply "Heroku: Running migrations for #{appName}"
+        msg.reply "Unfortunately I am not smart enough to tell you more :no_mouth:"
+
+  # Config Vars
+  robot.respond /heroku config:set (.*) (\w+)=(\w+)/i, (msg) ->
+    keyPair = {}
+    appName = msg.match[1]
+    key     = msg.match[2]
+    value   = msg.match[3]
+
+    msg.reply "Setting config #{key} => #{value}"
+
+    keyPair[key] = value
+
+    heroku.apps(appName).configVars().update keyPair, (error, response) ->
+      msg.reply "#{key} is set to #{response[key]}"
+
+  robot.respond /heroku config:unset (.*) (\w+)$/i, (msg) ->
+    keyPair = {}
+    appName = msg.match[1]
+    key     = msg.match[2]
+    value   = msg.match[3]
+
+    msg.reply "Unsetting config #{key}"
+
+    keyPair[key] = null
+
+    heroku.apps(appName).configVars().update keyPair, (error, response) ->
+      msg.reply "#{key} has been unset"
+
