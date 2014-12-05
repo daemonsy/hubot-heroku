@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/alphasights/hubot-heroku-commander",
   "dependencies": {
-    "heroku-client": "^1.9.0"
+    "heroku-client": "^1.9.0",
+    "lodash": "^2.4.1"
   }
 }
