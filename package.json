@@ -1,6 +1,6 @@
 {
   "name": "hubot-heroku-commander",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Let your team run heroku commands, but not have direct access to Heroku",
   "main": "index.js",
   "scripts": {
@@ -24,5 +24,13 @@
   "dependencies": {
     "heroku-client": "^1.9.0",
     "lodash": "^2.4.1"
+  },
+  "devDependencies": {
+    "chai": "^1.10.0",
+    "hubot": "^2.9.3",
+    "hubot-scripts": "^2.5.16",
+    "hubot-test-helper": "0.0.2",
+    "mocha": "^2.0.1",
+    "nock": "^0.51.0"
   }
 }
