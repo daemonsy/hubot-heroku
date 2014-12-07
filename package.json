@@ -1,10 +1,10 @@
 {
   "name": "hubot-heroku-commander",
-  "version": "0.0.4",
+  "version": "0.0.6",
   "description": "Let your team run heroku commands, but not have direct access to Heroku",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node_modules/.bin/mocha"
   },
   "repository": {
     "type": "git",
@@ -27,6 +27,7 @@
   },
   "devDependencies": {
     "chai": "^1.10.0",
+    "coffee-script": "^1.8.0",
     "hubot": "^2.9.3",
     "hubot-scripts": "^2.5.16",
     "hubot-test-helper": "0.0.2",
