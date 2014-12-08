@@ -23,8 +23,7 @@
 
 Heroku = require('heroku-client')
 heroku = new Heroku(token: process.env.HUBOT_HEROKU_API_KEY)
-_      = require('lodash')
-
+_      = require("lodash")
 
 module.exports = (robot) ->
   respondToUser = (robotMessage, error, successMessage) ->
@@ -85,9 +84,15 @@ module.exports = (robot) ->
     heroku.apps(appName).dynos().create
       command: "rake db:migrate"
       size: "1X"
-      attach: true
-    , (error, app) ->
+      attach: false
+    , (error, dyno) ->
       respondToUser(msg, error, "Heroku: Running migrations for #{appName}")
+
+      heroku.apps(appName).logSessions().create
+        dyno: dyno.name
+        tail: true
+      , (error, session) ->
+        respondToUser(msg, error, "View logs at: #{session.logplex_url}")
 
   # Config Vars
   robot.respond /heroku config:set (.*) (\w+)=(\w+)/i, (msg) ->

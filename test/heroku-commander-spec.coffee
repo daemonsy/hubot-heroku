@@ -1,5 +1,5 @@
-HubotHelper = require('hubot-test-helper')
-path = require('path')
+HubotHelper = require("hubot-test-helper")
+path = require("path")
 chai = require("chai")
 nock = require("nock")
 process.env.HUBOT_HEROKU_API_KEY = 'fake_key'
@@ -86,19 +86,32 @@ describe "HerokuCommander", ->
       , duration)
 
   describe "heroku migrate <app>", ->
-    it "runs migrations", (done) ->
+    beforeEach ->
       mockHeroku
         .post("/apps/shield-global-watch/dynos",
           command: "rake db:migrate"
-          attach: true
+          attach: false
           size: "1X"
         ).replyWithFile(200, __dirname + "/fixtures/migrate.json")
 
+      mockHeroku
+        .post("/apps/shield-global-watch/log-sessions",
+          dyno: "run.6454"
+          tail: true
+        ).replyWithFile(200, __dirname + "/fixtures/log-session.json")
+
       room.user.say "Damon", "hubot heroku migrate shield-global-watch"
 
+    it "runs migrations", (done) ->
       setTimeout(->
         expect(room.messages[1][1]).to.equal("@Damon Telling Heroku to migrate shield-global-watch")
         expect(room.messages[2][1]).to.equal("@Damon Heroku: Running migrations for shield-global-watch")
+        done()
+      , duration)
+
+    it "returns the logplex_url", (done) ->
+      setTimeout(->
+        expect(room.messages[3][1]).to.equal("@Damon View logs at: https://logplex.heroku.com/sessions/9d4f18cd-d9k8-39a5-ddef-a47dfa443z74?srv=1418011757")
         done()
       , duration)
 
