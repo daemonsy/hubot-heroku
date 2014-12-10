@@ -27,23 +27,23 @@ This robot is focused on letting you run auxiliary commands around the heroku sy
 You can set config variables using this. Hence the Heroku API key used should not have access to your hubot instance on Heroku. For example:
 
 ```
-hubot heroku config:set my-hubot HUBOT_ADMIN=dr_evil 
+hubot heroku config:set my-hubot HUBOT_ADMIN=dr_evil
 # Muhaha, now I'm to use hubot's other commands to take over the world
 ```
 
 ## Installation
 1. `npm install hubot-heroku-commander --save`
 2. Add `hubot-heroku-commander` to `external-scripts.json` (e.g. `["hubot-heroku-commander", "some-other-plugin"]`)
-3. Before deployment, set `HUBOT_HEROKU_API_KEY` to a heroku account's API key. This user must have access to the apps you want to use this script on. 
+3. Before deployment, set `HUBOT_HEROKU_API_KEY` to a heroku account's API key. This user must have access to the apps you want to use this script on.
 4. The full list of commands can be obtained using `hubot help`. The commands usually follow hubot heroku <action> <app> <extra info>
 
-The API key can be obtained here. 
+The API key can be obtained here.
 
 ![Heroku API Key Illustration](http://cl.ly/image/2l081V1k1d3g/Screenshot_2014-12-09_21_02_42.png)
 
 ## Usage
 Use `hubot help` to look for the commands. They are all prefixed by heroku. (e.g. `hubot heroku restart my-app`)
-Some commands (hubot help will be a better source of truth): 
+Some commands (hubot help will be a better source of truth):
 
     hubot heroku releases <app> - Latest 10 releases
     hubot heroku rollback <app> <version> - Rollback to a release
@@ -55,13 +55,13 @@ Some commands (hubot help will be a better source of truth):
 For example, `hubot heroku config:set API_KEY=12345`
 
 ## Troubleshooting
-If you get hubot errors, this might help: 
+If you get hubot errors, this might help:
 400  - Bad request. Hit me with an issue
 401  - Most likely the API key is incorrect or missing
 402  - According to Heroku, you need to pay them
-403  - You don't have access to that app. Perhaps it's a typo? 
-404  - No such API. Hit me with an issue. 
-405+ - Hit me with an issue 
+403  - You don't have access to that app. Perhaps it's a typo?
+404  - No such API. Hit me with an issue.
+405+ - Hit me with an issue
 
 Reference the [API documentation](https://devcenter.heroku.com/articles/platform-api-reference) for more information. Search for "Error Responses".
 
@@ -85,3 +85,7 @@ coffee --nodejs --debug node_modules/.bin/hubot
 ```
 
 Visit `http://127.0.0.1:8123/debug?port=5858` and use `debugger` statements to pause execution.
+
+## Contributing
+
+PRs and Issues greatly welcomed. Please read [Contributing](https://github.com/daemonsy/hubot-heroku-commander/blob/master/CONTRIBUTING.md) for more information.
