@@ -1,6 +1,6 @@
 {
   "name": "hubot-heroku-commander",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Let your team run heroku commands, but not have direct access to Heroku",
   "main": "index.js",
   "scripts": {
