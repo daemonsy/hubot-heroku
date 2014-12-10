@@ -1,4 +1,4 @@
-hubot-heroku-commander
+hubot-heroku
 ======================
 
 A hubot library that exposes heroku commands via Heroku's Platform API, with focus of letting non privileged developers carry out tasks around deployments, but not run dangerous commands or get access to the data.
@@ -7,7 +7,7 @@ A hubot library that exposes heroku commands via Heroku's Platform API, with foc
 
 Under Heroku's permission model, giving someone access to push/promote to production means giving full access to the data as well. This is generally not a good practice and for certain companies, it might be non-compliant.
 
-Our [team](http://engineering.alphasights.com) wanted to let every engineer do deployments without giving production access. We started this by using [atmos/hubot-deploy](https://github.com/atmos/hubot-deploy) and [atmos/heaven](https://github.com/atmos/heaven), but that didn't the ability to run migrations, set config variables etc. heroku-commander was made with this consideration in mind.
+Our [team](http://engineering.alphasights.com) wanted to let every engineer do deployments without giving production access. We started this by using [atmos/hubot-deploy](https://github.com/atmos/hubot-deploy) and [atmos/heaven](https://github.com/atmos/heaven), but that didn't the ability to run migrations, set config variables etc. hubot-heroku was made with this consideration in mind.
 
 ## Considerations
 - It's an opionated helper to get things done on Heroku, not an API client
@@ -32,8 +32,8 @@ hubot heroku config:set my-hubot HUBOT_ADMIN=dr_evil
 ```
 
 ## Installation
-1. `npm install hubot-heroku-commander --save`
-2. Add `hubot-heroku-commander` to `external-scripts.json` (e.g. `["hubot-heroku-commander", "some-other-plugin"]`)
+1. `npm install hubot-heroku --save`
+2. Add `hubot-heroku` to `external-scripts.json` (e.g. `["hubot-heroku", "some-other-plugin"]`)
 3. Before deployment, set `HUBOT_HEROKU_API_KEY` to a heroku account's API key. This user must have access to the apps you want to use this script on.
 4. The full list of commands can be obtained using `hubot help`. The commands usually follow hubot heroku <action> <app> <extra info>
 
@@ -88,4 +88,4 @@ Visit `http://127.0.0.1:8123/debug?port=5858` and use `debugger` statements to p
 
 ## Contributing
 
-PRs and Issues greatly welcomed. Please read [Contributing](https://github.com/daemonsy/hubot-heroku-commander/blob/master/CONTRIBUTING.md) for more information.
+PRs and Issues greatly welcomed. Please read [Contributing](https://github.com/daemonsy/hubot-heroku/blob/master/CONTRIBUTING.md) for more information.

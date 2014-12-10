@@ -1,7 +1,7 @@
 {
   "name": "hubot-heroku",
-  "version": "0.1.6",
-  "description": "Let your team run heroku commands, but not have direct access to Heroku",
+  "version": "0.1.7",
+  "description": "Run heroku commands via hubot without direct access to Heroku",
   "main": "index.js",
   "scripts": {
     "test": "node_modules/.bin/mocha"
