@@ -56,12 +56,12 @@ For example, `hubot heroku config:set API_KEY=12345`
 
 ## Troubleshooting
 If you get hubot errors, this might help:
-400  - Bad request. Hit me with an issue
-401  - Most likely the API key is incorrect or missing
-402  - According to Heroku, you need to pay them
-403  - You don't have access to that app. Perhaps it's a typo?
-404  - No such API. Hit me with an issue.
-405+ - Hit me with an issue
+- 400  - Bad request. Hit me with an issue
+- 401  - Most likely the API key is incorrect or missing
+- 402  - According to Heroku, you need to pay them
+- 403  - You don't have access to that app. Perhaps it's a typo?
+- 404  - No such API. Hit me with an issue.
+- 405+ - Hit me with an issue
 
 Reference the [API documentation](https://devcenter.heroku.com/articles/platform-api-reference) for more information. Search for "Error Responses".
 
