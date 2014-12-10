@@ -1,6 +1,6 @@
 {
   "name": "hubot-heroku",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Let your team run heroku commands, but not have direct access to Heroku",
   "main": "index.js",
   "scripts": {
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/daemonsy/hubot-heroku-commander"
+    "url": "https://github.com/daemonsy/hubot-heroku"
   },
   "keywords": [
     "Heroku",
@@ -19,9 +19,9 @@
   "author": "Damon Aw",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/daemonsy/hubot-heroku-commander/issues"
+    "url": "https://github.com/daemonsy/hubot-heroku/issues"
   },
-  "homepage": "https://github.com/daemonsy/hubot-heroku-commander",
+  "homepage": "https://github.com/daemonsy/hubot-heroku",
   "dependencies": {
     "heroku-client": "^1.9.0",
     "lodash": "^2.4.1"
