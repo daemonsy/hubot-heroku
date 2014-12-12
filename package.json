@@ -1,6 +1,6 @@
 {
   "name": "hubot-heroku",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Run heroku commands via hubot without direct access to Heroku",
   "main": "index.js",
   "scripts": {
