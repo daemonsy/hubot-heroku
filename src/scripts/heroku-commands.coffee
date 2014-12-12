@@ -50,7 +50,7 @@ module.exports = (robot) ->
     output.join("\n")
 
   # App Info
-  robot.respond /heroku info (.*)$/i, (msg) ->
+  robot.respond /heroku info (.*)/i, (msg) ->
     appName = msg.match[1]
 
     msg.reply "Getting information about #{appName}"
