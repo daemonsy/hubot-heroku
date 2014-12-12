@@ -9,12 +9,12 @@ process.env.HUBOT_HEROKU_API_KEY = 'fake_key'
 describe "Heroku Commands", ->
 
   helper = new HubotHelper("../index.coffee")
-  room = null
+  room = helper.createRoom()
   mockHeroku = nock("https://api.heroku.com")
   duration = 3
 
   beforeEach ->
-    room = helper.createRoom()
+    room.messages = []
 
   afterEach ->
     nock.cleanAll()
