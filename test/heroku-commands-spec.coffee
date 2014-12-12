@@ -6,7 +6,7 @@ process.env.HUBOT_HEROKU_API_KEY = 'fake_key'
 
 { expect } = chai
 
-describe "HerokuCommander", ->
+describe "Heroku Commands", ->
 
   helper = new HubotHelper("../index.coffee")
   room = null
@@ -15,6 +15,9 @@ describe "HerokuCommander", ->
 
   beforeEach ->
     room = helper.createRoom()
+
+  afterEach ->
+    nock.cleanAll()
 
   it "exposes help commands", ->
     commands = room.robot.commands
@@ -27,6 +30,21 @@ describe "HerokuCommander", ->
     expect(commands).to.include("hubot heroku migrate <app> - Runs migrations. Remember to restart the app =)")
     expect(commands).to.include("hubot heroku config:set <app> <KEY=value> - Set KEY to value. Overrides present key")
     expect(commands).to.include("hubot heroku config:unset <app> <KEY> - Unsets KEY, does not throw error if key is not present")
+
+  describe "heroku info <app>", ->
+    it "gets information about the app's dynos", (done) ->
+      mockHeroku
+        .get("/apps/shield-global-watch")
+        .replyWithFile(200, __dirname + "/fixtures/app-info.json")
+
+      room.user.say "Damon", "hubot heroku info shield-global-watch"
+
+      setTimeout(->
+        expect(room.messages[1][1]).to.equal("@Damon Getting information about shield-global-watch")
+        expect(room.messages[2][1]).to.contain("last_release : 2014-12-12T02:16:59Z")
+        done()
+      , duration)
+
 
   describe "heroku releases <app>", ->
     it "gets the 10 recent releases", (done) ->

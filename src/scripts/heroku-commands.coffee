@@ -23,7 +23,8 @@
 
 Heroku = require('heroku-client')
 heroku = new Heroku(token: process.env.HUBOT_HEROKU_API_KEY)
-_      = require("lodash")
+_      = require('lodash')
+mapper = require('../heroku-response-mapper')
 
 module.exports = (robot) ->
   respondToUser = (robotMessage, error, successMessage) ->
@@ -32,9 +33,33 @@ module.exports = (robot) ->
     else
       robotMessage.reply successMessage
 
+  rpad = (string, width, padding = ' ') ->
+    if (width <= string.length) then string else rpad(width, string + padding, padding)
+
+  objectToMessage = (object) ->
+    output = []
+    maxLength = 0
+    keys = Object.keys(object)
+    keys.forEach (key) ->
+      maxLength = key.length if key.length > maxLength
+
+    keys.forEach (key) ->
+      output.push "#{rpad(key, maxLength)} : #{object[key]}"
+
+    output.join("\n")
+
+  # App Info
+  robot.respond /heroku info (.*)$/i, (msg) ->
+    appName = msg.match[1]
+
+    msg.reply "Getting information about #{appName}"
+
+    heroku.apps(appName).info (error, info) ->
+      respondToUser(msg, error, "\n" + objectToMessage(mapper.info(info)))
+
   # Releases
   robot.respond /heroku releases (.*)$/i, (msg) ->
-    appName= msg.match[1]
+    appName = msg.match[1]
 
     msg.reply "Getting releases for #{appName}"
 
@@ -120,4 +145,3 @@ module.exports = (robot) ->
 
     heroku.apps(appName).configVars().update keyPair, (error, response) ->
       respondToUser(msg, error, "Heroku: #{key} has been unset")
-
