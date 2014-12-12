@@ -8,6 +8,7 @@
 #   HUBOT_HEROKU_API_KEY
 #
 # Commands:
+#   hubot heroku info <app> - Returns useful information about the app
 #   hubot heroku releases <app> - Latest 10 releases
 #   hubot heroku rollback <app> <version> - Rollback to a release
 #   hubot heroku restart <app> - Restarts the app

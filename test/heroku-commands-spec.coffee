@@ -22,8 +22,9 @@ describe "Heroku Commands", ->
   it "exposes help commands", ->
     commands = room.robot.commands
 
-    expect(commands).to.have.length(6)
+    expect(commands).to.have.length(7)
 
+    expect(commands).to.include("hubot heroku info <app> - Returns useful information about the app")
     expect(commands).to.include("hubot heroku releases <app> - Latest 10 releases")
     expect(commands).to.include("hubot heroku rollback <app> <version> - Rollback to a release")
     expect(commands).to.include("hubot heroku restart <app> - Restarts the app")
@@ -80,7 +81,7 @@ describe "Heroku Commands", ->
         done()
       , duration)
 
-    it "tells the user about a bad version", (done) ->
+    it "tells the user about a bad supplied version", (done) ->
       room.user.say "Damon", "hubot heroku rollback shield-global-watch v999"
 
       setTimeout(->
