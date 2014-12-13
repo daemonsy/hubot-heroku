@@ -13,7 +13,8 @@
 #   hubot heroku rollback <app> <version> - Rollback to a release
 #   hubot heroku restart <app> - Restarts the app
 #   hubot heroku migrate <app> - Runs migrations. Remember to restart the app =)
-#   hubot heroku config:set <app> <KEY=value> - Set KEY to value. Overrides present key
+#   hubot heroku config <app> - Get config keys for the app. Values not given for security
+#   hubot heroku config:set <app> <KEY=value> - Set KEY to value. Case sensitive and overrides present key
 #   hubot heroku config:unset <app> <KEY> - Unsets KEY, does not throw error if key is not present
 #
 # Notes:
@@ -121,6 +122,15 @@ module.exports = (robot) ->
         respondToUser(msg, error, "View logs at: #{session.logplex_url}")
 
   # Config Vars
+  robot.respond /heroku config (.*)$/i, (msg) ->
+    appName = msg.match[1]
+
+    msg.reply "Getting config keys for #{appName}"
+
+    heroku.apps(appName).configVars().info (error, configVars) ->
+      listOfKeys = configVars && Object.keys(configVars).join(", ")
+      respondToUser(msg, error, listOfKeys)
+
   robot.respond /heroku config:set (.*) (\w+)=(\w+)/i, (msg) ->
     keyPair = {}
     appName = msg.match[1]
@@ -131,8 +141,8 @@ module.exports = (robot) ->
 
     keyPair[key] = value
 
-    heroku.apps(appName).configVars().update keyPair, (error, response) ->
-      respondToUser(msg, error, "Heroku: #{key} is set to #{response[key]}")
+    heroku.apps(appName).configVars().update keyPair, (error, configVars) ->
+      respondToUser(msg, error, "Heroku: #{key} is set to #{configVars[key]}")
 
   robot.respond /heroku config:unset (.*) (\w+)$/i, (msg) ->
     keyPair = {}

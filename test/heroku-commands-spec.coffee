@@ -11,7 +11,7 @@ describe "Heroku Commands", ->
   helper = new HubotHelper("../index.coffee")
   room = helper.createRoom()
   mockHeroku = nock("https://api.heroku.com")
-  duration = 3
+  duration = 5
 
   beforeEach ->
     room.messages = []
@@ -22,14 +22,15 @@ describe "Heroku Commands", ->
   it "exposes help commands", ->
     commands = room.robot.commands
 
-    expect(commands).to.have.length(7)
+    expect(commands).to.have.length(8)
 
     expect(commands).to.include("hubot heroku info <app> - Returns useful information about the app")
     expect(commands).to.include("hubot heroku releases <app> - Latest 10 releases")
     expect(commands).to.include("hubot heroku rollback <app> <version> - Rollback to a release")
     expect(commands).to.include("hubot heroku restart <app> - Restarts the app")
     expect(commands).to.include("hubot heroku migrate <app> - Runs migrations. Remember to restart the app =)")
-    expect(commands).to.include("hubot heroku config:set <app> <KEY=value> - Set KEY to value. Overrides present key")
+    expect(commands).to.include("hubot heroku config <app> - Get config keys for the app. Values not given for security")
+    expect(commands).to.include("hubot heroku config:set <app> <KEY=value> - Set KEY to value. Case sensitive and overrides present key")
     expect(commands).to.include("hubot heroku config:unset <app> <KEY> - Unsets KEY, does not throw error if key is not present")
 
   describe "heroku info <app>", ->
@@ -134,7 +135,22 @@ describe "Heroku Commands", ->
         done()
       , duration)
 
-  describe "heroku config:set", ->
+  describe "heroku config <app>", ->
+    it "gets a list of config keys without values", (done) ->
+      mockHeroku
+        .get("/apps/shield-global-watch/config-vars")
+        .replyWithFile(200, __dirname + "/fixtures/config.json")
+
+      room.user.say "Damon", "hubot heroku config shield-global-watch"
+
+      setTimeout(->
+        expect(room.messages[1][1]).to.equal("@Damon Getting config keys for shield-global-watch")
+        expect(room.messages[2][1]).to.equal("@Damon CLOAK, COMMANDER, AUTOPILOT, PILOT_NAME")
+        done()
+      )
+
+
+  describe "heroku config:set <app> <KEY=value>", ->
     it "sets config <KEY=value>", (done) ->
       mockHeroku
         .patch("/apps/shield-global-watch/config-vars",
