@@ -49,7 +49,8 @@ Some commands (hubot help will be a better source of truth):
     hubot heroku rollback <app> <version> - Rollback to a release
     hubot heroku restart <app> - Restarts the app
     hubot heroku migrate <app> - Runs migrations. Remember to restart the app =)
-    hubot heroku config:set <app> <KEY=value> - Set KEY to value. Overrides present key
+    hubot heroku config <app> - Get config keys for the app. Values not given for security
+    hubot heroku config:set <app> <KEY=value> - Set KEY to value. Case sensitive and overrides present key
     hubot heroku config:unset <app> <KEY> - Unsets KEY, does not throw error if key is not present
 
 For example, `hubot heroku config:set API_KEY=12345`
