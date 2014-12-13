@@ -149,7 +149,6 @@ describe "Heroku Commands", ->
         done()
       )
 
-
   describe "heroku config:set <app> <KEY=value>", ->
     it "sets config <KEY=value>", (done) ->
       mockHeroku
