@@ -44,6 +44,7 @@ The API key can be obtained here.
 ## Usage
 Use `hubot help` to look for the commands. They are all prefixed by heroku. (e.g. `hubot heroku restart my-app`)
 Some commands (hubot help will be a better source of truth):
+
     hubot heroku info <app> - Returns useful information about the app
     hubot heroku releases <app> - Latest 10 releases
     hubot heroku rollback <app> <version> - Rollback to a release
