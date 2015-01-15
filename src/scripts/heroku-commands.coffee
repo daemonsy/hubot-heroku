@@ -131,7 +131,7 @@ module.exports = (robot) ->
       listOfKeys = configVars && Object.keys(configVars).join(", ")
       respondToUser(msg, error, listOfKeys)
 
-  robot.respond /heroku config:set (.*) (\w+)=(.*)/i, (msg) ->
+  robot.respond /heroku config:set (.*) (\w+)=(.+)/i, (msg) ->
     keyPair = {}
 
 
