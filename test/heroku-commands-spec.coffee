@@ -155,14 +155,14 @@ describe "Heroku Commands", ->
     it "sets config <KEY=value>", (done) ->
       mockHeroku
         .patch("/apps/shield-global-watch/config-vars",
-          "CLOAK_ID": 10
+          "CLOAK_ID": 'example.com'
         ).replyWithFile(200, __dirname + "/fixtures/config-set.json")
 
-      room.user.say "Damon", "hubot heroku config:set shield-global-watch CLOAK_ID=10"
+      room.user.say "Damon", "hubot heroku config:set shield-global-watch CLOAK_ID=example.com"
 
       setTimeout(->
-        expect(room.messages[1][1]).to.equal("@Damon Setting config CLOAK_ID => 10")
-        expect(room.messages[2][1]).to.equal("@Damon Heroku: CLOAK_ID is set to 10")
+        expect(room.messages[1][1]).to.equal("@Damon Setting config CLOAK_ID => example.com")
+        expect(room.messages[2][1]).to.equal("@Damon Heroku: CLOAK_ID is set to example.com")
         done()
       , duration)
 
