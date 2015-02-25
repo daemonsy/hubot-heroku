@@ -82,6 +82,8 @@ node-inspector --no-preload --web-port 8123
 
 ### Get hubot to run with debugging on
 ```bash
+# In your hubot folder
+npm link /path/to/hubot-heroku
 coffee --nodejs --debug node_modules/.bin/hubot
 ```
 
