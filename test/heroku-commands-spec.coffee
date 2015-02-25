@@ -2,6 +2,7 @@ HubotHelper = require("hubot-test-helper")
 path = require("path")
 chai = require("chai")
 nock = require("nock")
+
 process.env.HUBOT_HEROKU_API_KEY = 'fake_key'
 
 { expect } = chai
@@ -150,11 +151,13 @@ describe "Heroku Commands", ->
       )
 
   describe "heroku config:set <app> <KEY=value>", ->
-    it "sets config <KEY=value>", (done) ->
+    mockRequest = (keyPair) ->
       mockHeroku
-        .patch("/apps/shield-global-watch/config-vars",
-          "CLOAK_ID": 'example.com'
-        ).replyWithFile(200, __dirname + "/fixtures/config-set.json")
+        .patch("/apps/shield-global-watch/config-vars",keyPair)
+        .replyWithFile(200, __dirname + "/fixtures/config-set.json")
+
+    it "sets config <KEY=value>", (done) ->
+      mockRequest({ "CLOAK_ID": "example.com" })
 
       room.user.say "Damon", "hubot heroku config:set shield-global-watch CLOAK_ID=example.com"
 
@@ -163,6 +166,57 @@ describe "Heroku Commands", ->
         expect(room.messages[2][1]).to.equal("@Damon Heroku: CLOAK_ID is set to example.com")
         done()
       , duration)
+
+    it "handles UUIDs", (done) ->
+      mockRequest("UUID": "d5126f0d-b3be-46af-883f-b330a73964f9")
+
+      room.user.say "Damon", "hubot heroku config:set shield-global-watch UUID=d5126f0d-b3be-46af-883f-b330a73964f9"
+
+      setTimeout(->
+        expect(room.messages[2][1]).to.equal("@Damon Heroku: UUID is set to d5126f0d-b3be-46af-883f-b330a73964f9")
+        done()
+      , duration)
+
+    it "handles URLs", (done) ->
+      mockRequest("PUSHER_URL": "http://c0d9g8najfcc4634kd3:cf2eeas0d8dghfa847d@api.pusherapp.com/apps/1234")
+
+      room.user.say "Damon", "hubot heroku config:set shield-global-watch PUSHER_URL=http://c0d9g8najfcc4634kd3:cf2eeas0d8dghfa847d@api.pusherapp.com/apps/1234"
+
+      setTimeout(->
+        expect(room.messages[2][1]).to.equal("@Damon Heroku: PUSHER_URL is set to http://c0d9g8najfcc4634kd3:cf2eeas0d8dghfa847d@api.pusherapp.com/apps/1234")
+        done()
+      , duration)
+
+    it "handles comma delimited strings", (done) ->
+      mockRequest("COMMA_DELIMITED_STRING": "MiD,DA,MDe")
+
+      room.user.say "Damon", "hubot heroku config:set shield-global-watch COMMA_DELIMITED_STRING=MiD,DA,MDe"
+
+      setTimeout(->
+        expect(room.messages[2][1]).to.equal("@Damon Heroku: COMMA_DELIMITED_STRING is set to MiD,DA,MDe")
+        done()
+      , duration)
+
+    it "handles text strings", (done) ->
+      mockRequest("SENTENCE": "Don\'t stop believin.")
+
+      room.user.say "Damon", "hubot heroku config:set shield-global-watch SENTENCE=\"Don't stop believin.\""
+
+      setTimeout(->
+        expect(room.messages[2][1]).to.equal("@Damon Heroku: SENTENCE is set to Don\'t stop believin.")
+        done()
+      , duration)
+
+    xit "handles RSA secret keys", (done) ->
+      mockRequest("RSA_SECRET_KEY": "\"----BEGIN RSA PRIVATE KEY-----\nsfsdfdssfdsFDSFDGSDfsdfsfs\nSDfSDFdUbOfFRocKsSFDSFSDFDS=\n-----END RSA PRIVATE KEY-----\n\"")
+
+      room.user.say "Damon", "hubot heroku config:set shield-global-watch RSA_SECRET_KEY=\"----BEGIN RSA PRIVATE KEY-----\nsfsdfdssfdsFDSFDGSDfsdfsfs\nSDfSDFdUbOfFRocKsSFDSFSDFDS=\n-----END RSA PRIVATE KEY-----\n\""
+
+      setTimeout(->
+        expect(room.messages[2][1]).to.equal("@Damon Heroku: RSA_SECRET_KEY is set to ----BEGIN RSA PRIVATE KEY-----\nsfsdfdssfdsFDSFDGSDfsdfsfs\nSDfSDFdUbOfFRocKsSFDSFSDFDS=\n-----END RSA PRIVATE KEY-----\n")
+        done()
+      , duration)
+
 
   describe "heroku config:unset <KEY>", ->
     it "unsets config <KEY>", (done) ->

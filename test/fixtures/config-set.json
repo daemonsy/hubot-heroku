@@ -1,1 +1,8 @@
-{ "CLOAK_ID": "example.com" }
+{
+  "CLOAK_ID"               : "example.com",
+  "UUID"                   : "d5126f0d-b3be-46af-883f-b330a73964f9",
+  "PUSHER_URL"             : "http://c0d9g8najfcc4634kd3:cf2eeas0d8dghfa847d@api.pusherapp.com/apps/1234",
+  "RSA_SECRET_KEY"         : "\"----BEGIN RSA PRIVATE KEY-----\nsfsdfdssfdsFDSFDGSDfsdfsfs\nSDfSDFdUbOfFRocKsSFDSFSDFDS=\n-----END RSA PRIVATE KEY-----\n\"",
+  "COMMA_DELIMITED_STRING" : "MiD,DA,MDe",
+  "SENTENCE"               : "Don't stop believin."
+}
