@@ -17,9 +17,6 @@
 #   hubot heroku config:set <app> <KEY=value> - Set KEY to value. Case sensitive and overrides present key
 #   hubot heroku config:unset <app> <KEY> - Unsets KEY, does not throw error if key is not present
 #
-# Notes:
-#   Very alpha
-#
 # Author:
 #   daemonsy
 
