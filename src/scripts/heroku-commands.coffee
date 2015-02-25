@@ -128,11 +128,12 @@ module.exports = (robot) ->
       listOfKeys = configVars && Object.keys(configVars).join(", ")
       respondToUser(msg, error, listOfKeys)
 
-  robot.respond /heroku config:set (.*) (\w+)=(\w+)/i, (msg) ->
+  robot.respond /heroku config:set (.*) (\w+)=('(.+)'|"(.+)"|(.+\b))/i, (msg) ->
     keyPair = {}
+
     appName = msg.match[1]
     key     = msg.match[2]
-    value   = msg.match[3]
+    value   = msg.match[4] || msg.match[5] || msg.match[6] # :sad_panda:
 
     msg.reply "Setting config #{key} => #{value}"
 
