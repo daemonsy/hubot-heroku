@@ -1,3 +1,5 @@
+require('dotenv').load()
+
 HubotHelper = require("hubot-test-helper")
 path = require("path")
 chai = require("chai")
