@@ -28,7 +28,7 @@ use_auth = process.env.HUBOT_HEROKU_USE_AUTH
 
 module.exports = (robot) ->
   auth = (appName) ->
-    role = appName
+    role = "heroku-#{appName}"
     if useAuth and not robot.auth.hasRole(msg.envelope.user, role)
       msg.send "Access denied. You must have this role to use this command: #{role}"
       return
