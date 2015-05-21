@@ -27,6 +27,7 @@ This robot is focused on letting you run auxiliary commands around the heroku sy
 You can restrict command usage to specific roles using the [hubot-auth](https://github.com/hubot-scripts/hubot-auth) package. Role names take the form `heroku-<app>`.
 
 To enable auth:
+
 1. `npm install hubot-auth --save`
 2. Add `hubot-auth` to `external-scripts.json` (e.g. `["hubot-auth", "some-other-plugin"]`)
 3. Set `HUBOT_HEROKU_USE_AUTH` to `true`.
