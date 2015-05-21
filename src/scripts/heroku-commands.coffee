@@ -33,7 +33,8 @@ module.exports = (robot) ->
     isAdmin = robot.auth.hasRole(msg.envelope.user, 'admin')
     if useAuth and not (hasRole or isAdmin)
       msg.reply "Access denied. You must have this role to use this command: #{role}"
-      return
+      return false
+    return true
 
   respondToUser = (robotMessage, error, successMessage) ->
     if error
@@ -60,7 +61,7 @@ module.exports = (robot) ->
   robot.respond /heroku info (.*)/i, (msg) ->
     appName = msg.match[1]
 
-    auth(msg, appName)
+    return unless auth(msg, appName)
 
     msg.reply "Getting information about #{appName}"
 
@@ -71,7 +72,7 @@ module.exports = (robot) ->
   robot.respond /heroku releases (.*)$/i, (msg) ->
     appName = msg.match[1]
 
-    auth(msg, appName)
+    return unless auth(msg, appName)
 
     msg.reply "Getting releases for #{appName}"
 
@@ -90,7 +91,7 @@ module.exports = (robot) ->
     appName = msg.match[1]
     version = msg.match[2]
 
-    auth(msg, appName)
+    return unless auth(msg, appName)
 
     if version.match(/v\d+$/)
       msg.reply "Telling Heroku to rollback to #{version}"
@@ -109,7 +110,7 @@ module.exports = (robot) ->
   robot.respond /heroku restart (.*)/i, (msg) ->
     appName = msg.match[1]
 
-    auth(msg, appName)
+    return unless auth(msg, appName)
 
     msg.reply "Telling Heroku to restart #{appName}"
 
@@ -120,7 +121,7 @@ module.exports = (robot) ->
   robot.respond /heroku migrate (.*)/i, (msg) ->
     appName = msg.match[1]
 
-    auth(msg, appName)
+    return unless auth(msg, appName)
 
     msg.reply "Telling Heroku to migrate #{appName}"
 
@@ -141,7 +142,7 @@ module.exports = (robot) ->
   robot.respond /heroku config (.*)$/i, (msg) ->
     appName = msg.match[1]
 
-    auth(msg, appName)
+    return unless auth(msg, appName)
 
     msg.reply "Getting config keys for #{appName}"
 
@@ -156,7 +157,7 @@ module.exports = (robot) ->
     key     = msg.match[2]
     value   = msg.match[4] || msg.match[5] || msg.match[6] # :sad_panda:
 
-    auth(msg, appName)
+    return unless auth(msg, appName)
 
     msg.reply "Setting config #{key} => #{value}"
 
@@ -171,7 +172,7 @@ module.exports = (robot) ->
     key     = msg.match[2]
     value   = msg.match[3]
 
-    auth(msg, appName)
+    return unless auth(msg, appName)
 
     msg.reply "Unsetting config #{key}"
 
