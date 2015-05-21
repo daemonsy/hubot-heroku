@@ -24,7 +24,7 @@ Heroku = require('heroku-client')
 heroku = new Heroku(token: process.env.HUBOT_HEROKU_API_KEY)
 _      = require('lodash')
 mapper = require('../heroku-response-mapper')
-useAuth = process.env.HUBOT_HEROKU_USE_AUTH
+useAuth = (process.env.HUBOT_HEROKU_USE_AUTH || '').trim().toLowerCase() is 'true'
 
 module.exports = (robot) ->
   auth = (msg, appName) ->
