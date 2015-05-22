@@ -11,7 +11,7 @@
 #   hubot heroku info <app> - Returns useful information about the app
 #   hubot heroku releases <app> - Latest 10 releases
 #   hubot heroku rollback <app> <version> - Rollback to a release
-#   hubot heroku restart <app> - Restarts the app
+#   hubot heroku restart <app> <dyno> - Restarts the specified app or dyno/s
 #   hubot heroku migrate <app> - Runs migrations. Remember to restart the app =)
 #   hubot heroku config <app> - Get config keys for the app. Values not given for security
 #   hubot heroku config:set <app> <KEY=value> - Set KEY to value. Case sensitive and overrides present key
@@ -91,13 +91,18 @@ module.exports = (robot) ->
           respondToUser(msg, error, "Success! v#{release.version} -> Rollback to #{version}")
 
   # Restart
-  robot.respond /heroku restart (.*)/i, (msg) ->
+  robot.respond /heroku restart ([\w-]+)\s?(\w+(?:\.\d+)?)?/i, (msg) ->
     appName = msg.match[1]
+    dynoName = msg.match[2] or ''
 
-    msg.reply "Telling Heroku to restart #{appName}"
+    msg.reply "Telling Heroku to restart #{appName} #{dynoName}"
 
-    heroku.apps(appName).dynos().restartAll (error, app) ->
-      respondToUser(msg, error, "Heroku: Restarting #{appName}")
+    unless dynoName
+      heroku.apps(appName).dynos().restartAll (error, app) ->
+        respondToUser(msg, error, "Heroku: Restarting #{appName}")
+    else
+      heroku.apps(appName).dynos(dynoName).restart (error, app) ->
+        respondToUser(msg, error, "Heroku: Restarting #{appName} #{dynoName}")
 
   # Migration
   robot.respond /heroku migrate (.*)/i, (msg) ->
