@@ -93,16 +93,17 @@ module.exports = (robot) ->
   # Restart
   robot.respond /heroku restart ([\w-]+)\s?(\w+(?:\.\d+)?)?/i, (msg) ->
     appName = msg.match[1]
-    dynoName = msg.match[2] or ''
+    dynoName = msg.match[2]
+    dynoNameText = if dynoName then ' '+dynoName else ''
 
-    msg.reply "Telling Heroku to restart #{appName}#{if dynoName then ' '+dynoName else ''}"
+    msg.reply "Telling Heroku to restart #{appName}#{dynoNameText}"
 
     unless dynoName
       heroku.apps(appName).dynos().restartAll (error, app) ->
         respondToUser(msg, error, "Heroku: Restarting #{appName}")
     else
       heroku.apps(appName).dynos(dynoName).restart (error, app) ->
-        respondToUser(msg, error, "Heroku: Restarting #{appName}#{if dynoName then ' '+dynoName else ''}")
+        respondToUser(msg, error, "Heroku: Restarting #{appName}#{dynoNameText}")
 
   # Migration
   robot.respond /heroku migrate (.*)/i, (msg) ->
