@@ -95,14 +95,14 @@ module.exports = (robot) ->
     appName = msg.match[1]
     dynoName = msg.match[2] or ''
 
-    msg.reply "Telling Heroku to restart #{appName} #{dynoName}"
+    msg.reply "Telling Heroku to restart #{appName}#{if dynoName then ' '+dynoName else ''}"
 
     unless dynoName
       heroku.apps(appName).dynos().restartAll (error, app) ->
         respondToUser(msg, error, "Heroku: Restarting #{appName}")
     else
       heroku.apps(appName).dynos(dynoName).restart (error, app) ->
-        respondToUser(msg, error, "Heroku: Restarting #{appName} #{dynoName}")
+        respondToUser(msg, error, "Heroku: Restarting #{appName}#{if dynoName then ' '+dynoName else ''}")
 
   # Migration
   robot.respond /heroku migrate (.*)/i, (msg) ->

@@ -30,7 +30,7 @@ describe "Heroku Commands", ->
     expect(commands).to.include("hubot heroku info <app> - Returns useful information about the app")
     expect(commands).to.include("hubot heroku releases <app> - Latest 10 releases")
     expect(commands).to.include("hubot heroku rollback <app> <version> - Rollback to a release")
-    expect(commands).to.include("hubot heroku restart <app> - Restarts the app")
+    expect(commands).to.include("hubot heroku restart <app> <dyno> - Restarts the specified app or dyno/s")
     expect(commands).to.include("hubot heroku migrate <app> - Runs migrations. Remember to restart the app =)")
     expect(commands).to.include("hubot heroku config <app> - Get config keys for the app. Values not given for security")
     expect(commands).to.include("hubot heroku config:set <app> <KEY=value> - Set KEY to value. Case sensitive and overrides present key")
@@ -94,7 +94,7 @@ describe "Heroku Commands", ->
         done()
       , duration)
 
-  describe "heroku restart <app>", ->
+  describe "heroku restart <app> <dyno>", ->
     it "restarts the app", (done) ->
       mockHeroku
         .delete("/apps/shield-global-watch/dynos")
@@ -105,6 +105,32 @@ describe "Heroku Commands", ->
       setTimeout(->
         expect(room.messages[1][1]).to.equal("@Damon Telling Heroku to restart shield-global-watch")
         expect(room.messages[2][1]).to.equal("@Damon Heroku: Restarting shield-global-watch")
+        done()
+      , duration)
+
+    it "restarts all dynos of a process", (done) ->
+      mockHeroku
+        .delete("/apps/shield-global-watch/dynos/web")
+        .reply(200, {})
+
+      room.user.say "Damon", "hubot heroku restart shield-global-watch web"
+
+      setTimeout(->
+        expect(room.messages[1][1]).to.equal("@Damon Telling Heroku to restart shield-global-watch web")
+        expect(room.messages[2][1]).to.equal("@Damon Heroku: Restarting shield-global-watch web")
+        done()
+      , duration)
+
+    it "restarts specific dynos", (done) ->
+      mockHeroku
+        .delete("/apps/shield-global-watch/dynos/web.1")
+        .reply(200, {})
+
+      room.user.say "Damon", "hubot heroku restart shield-global-watch web.1"
+
+      setTimeout(->
+        expect(room.messages[1][1]).to.equal("@Damon Telling Heroku to restart shield-global-watch web.1")
+        expect(room.messages[2][1]).to.equal("@Damon Heroku: Restarting shield-global-watch web.1")
         done()
       , duration)
 
@@ -150,7 +176,7 @@ describe "Heroku Commands", ->
         expect(room.messages[1][1]).to.equal("@Damon Getting config keys for shield-global-watch")
         expect(room.messages[2][1]).to.equal("@Damon CLOAK, COMMANDER, AUTOPILOT, PILOT_NAME")
         done()
-      )
+      , duration)
 
   describe "heroku config:set <app> <KEY=value>", ->
     mockRequest = (keyPair) ->
@@ -234,4 +260,3 @@ describe "Heroku Commands", ->
         expect(room.messages[2][1]).to.equal("@Damon Heroku: CLOAK_ID has been unset")
         done()
       , duration)
-
