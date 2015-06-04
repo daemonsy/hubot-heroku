@@ -24,6 +24,7 @@ Heroku = require('heroku-client')
 heroku = new Heroku(token: process.env.HUBOT_HEROKU_API_KEY)
 _      = require('lodash')
 mapper = require('../heroku-response-mapper')
+moment = require('moment')
 
 module.exports = (robot) ->
   respondToUser = (robotMessage, error, successMessage) ->
@@ -55,6 +56,32 @@ module.exports = (robot) ->
 
     heroku.apps(appName).info (error, info) ->
       respondToUser(msg, error, "\n" + objectToMessage(mapper.info(info)))
+
+  # Dynos
+  robot.respond /heroku dynos (.*)/i, (msg) ->
+    appName = msg.match[1]
+
+    msg.reply "Getting dynos of #{appName}"
+
+    heroku.apps(appName).info (error, dynos) ->
+      output = []
+      if dynos
+        output.push "Dynos of #{appName}"
+        lastFormation = ""
+
+        for dyno in dynos
+          currentFormation = "#{dyno.type}.#{dyno.size}"
+
+          unless currentFormation is lastFormation
+            output.push "" if lastFormation
+            output.push "=== #{dyno.type} (#{dyno.size}): `#{dyno.command}`"
+            lastFormation = currentFormation
+
+          updatedAt = moment(dyno.updated_at, 'YYYY/MM/DD HH:mm:ss')
+          timeAgo = moment(dyno.updated_at).fromNow()
+          output.push "#{dyno.name}: #{dyno.state} #{updatedAt} (~ #{timeAgo})"
+
+      respondToUser(msg, error, output.join("\n"))
 
   # Releases
   robot.respond /heroku releases (.*)$/i, (msg) ->
