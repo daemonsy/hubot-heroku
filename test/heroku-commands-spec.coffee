@@ -6,15 +6,18 @@ chai = require("chai")
 nock = require("nock")
 
 process.env.HUBOT_HEROKU_API_KEY = 'fake_key'
+useAuth = (process.env.HUBOT_HEROKU_USE_AUTH or '').trim().toLowerCase() is 'true'
+withAuth = if useAuth then ' w/Auth' else ''
 
 { expect } = chai
 
-describe "Heroku Commands", ->
+describe "Heroku Commands#{withAuth}", ->
 
   helper = new HubotHelper("../index.coffee")
   room = helper.createRoom()
   mockHeroku = nock("https://api.heroku.com")
   duration = 5
+  deniedMessage = "@Damon Access denied. You must have this role to use this command: heroku-shield-global-watch"
 
   beforeEach ->
     room.messages = []
@@ -23,7 +26,7 @@ describe "Heroku Commands", ->
     nock.cleanAll()
 
   it "exposes help commands", ->
-    commands = room.robot.commands
+    commands = room.robot.commands.filter (command) -> command.slice(0,12) is "hubot heroku"
 
     expect(commands).to.have.length(8)
 
@@ -45,8 +48,11 @@ describe "Heroku Commands", ->
       room.user.say "Damon", "hubot heroku info shield-global-watch"
 
       setTimeout(->
-        expect(room.messages[1][1]).to.equal("@Damon Getting information about shield-global-watch")
-        expect(room.messages[2][1]).to.contain("last_release : 2014-12-12T02:16:59Z")
+        if useAuth
+          expect(room.messages[1][1]).to.equal(deniedMessage)
+        else
+          expect(room.messages[1][1]).to.equal("@Damon Getting information about shield-global-watch")
+          expect(room.messages[2][1]).to.contain("last_release : 2014-12-12T02:16:59Z")
         done()
       , duration)
 
@@ -60,8 +66,11 @@ describe "Heroku Commands", ->
       room.user.say "Damon", "hubot heroku releases shield-global-watch"
 
       setTimeout(->
-        expect(room.messages[1][1]).to.equal("@Damon Getting releases for shield-global-watch")
-        expect(room.messages[2][1]).to.include("@Damon Recent releases of shield-global-watch\nv352 - Promote shield-global-watch v287 fb2b5ff - phil@shield.com")
+        if useAuth
+          expect(room.messages[1][1]).to.equal(deniedMessage)
+        else
+          expect(room.messages[1][1]).to.equal("@Damon Getting releases for shield-global-watch")
+          expect(room.messages[2][1]).to.include("@Damon Recent releases of shield-global-watch\nv352 - Promote shield-global-watch v287 fb2b5ff - phil@shield.com")
         done()
       , duration)
 
@@ -80,8 +89,11 @@ describe "Heroku Commands", ->
       room.user.say "Damon", "hubot heroku rollback shield-global-watch v352"
 
       setTimeout(->
-        expect(room.messages[1][1]).to.equal("@Damon Telling Heroku to rollback to v352")
-        expect(room.messages[2][1]).to.equal("@Damon Success! v353 -> Rollback to v352")
+        if useAuth
+          expect(room.messages[1][1]).to.equal(deniedMessage)
+        else
+          expect(room.messages[1][1]).to.equal("@Damon Telling Heroku to rollback to v352")
+          expect(room.messages[2][1]).to.equal("@Damon Success! v353 -> Rollback to v352")
         done()
       , duration)
 
@@ -89,8 +101,11 @@ describe "Heroku Commands", ->
       room.user.say "Damon", "hubot heroku rollback shield-global-watch v999"
 
       setTimeout(->
-        expect(room.messages[1][1]).to.equal("@Damon Telling Heroku to rollback to v999")
-        expect(room.messages[2][1]).to.equal("@Damon Version v999 not found for shield-global-watch :(")
+        if useAuth
+          expect(room.messages[1][1]).to.equal(deniedMessage)
+        else
+          expect(room.messages[1][1]).to.equal("@Damon Telling Heroku to rollback to v999")
+          expect(room.messages[2][1]).to.equal("@Damon Version v999 not found for shield-global-watch :(")
         done()
       , duration)
 
@@ -103,8 +118,11 @@ describe "Heroku Commands", ->
       room.user.say "Damon", "hubot heroku restart shield-global-watch"
 
       setTimeout(->
-        expect(room.messages[1][1]).to.equal("@Damon Telling Heroku to restart shield-global-watch")
-        expect(room.messages[2][1]).to.equal("@Damon Heroku: Restarting shield-global-watch")
+        if useAuth
+          expect(room.messages[1][1]).to.equal(deniedMessage)
+        else
+          expect(room.messages[1][1]).to.equal("@Damon Telling Heroku to restart shield-global-watch")
+          expect(room.messages[2][1]).to.equal("@Damon Heroku: Restarting shield-global-watch")
         done()
       , duration)
 
@@ -127,14 +145,20 @@ describe "Heroku Commands", ->
 
     it "runs migrations", (done) ->
       setTimeout(->
-        expect(room.messages[1][1]).to.equal("@Damon Telling Heroku to migrate shield-global-watch")
-        expect(room.messages[2][1]).to.equal("@Damon Heroku: Running migrations for shield-global-watch")
+        if useAuth
+          expect(room.messages[1][1]).to.equal(deniedMessage)
+        else
+          expect(room.messages[1][1]).to.equal("@Damon Telling Heroku to migrate shield-global-watch")
+          expect(room.messages[2][1]).to.equal("@Damon Heroku: Running migrations for shield-global-watch")
         done()
       , duration)
 
     it "returns the logplex_url", (done) ->
       setTimeout(->
-        expect(room.messages[3][1]).to.equal("@Damon View logs at: https://logplex.heroku.com/sessions/9d4f18cd-d9k8-39a5-ddef-a47dfa443z74?srv=1418011757")
+        if useAuth
+          expect(room.messages[1][1]).to.equal(deniedMessage)
+        else
+          expect(room.messages[3][1]).to.equal("@Damon View logs at: https://logplex.heroku.com/sessions/9d4f18cd-d9k8-39a5-ddef-a47dfa443z74?srv=1418011757")
         done()
       , duration)
 
@@ -147,10 +171,13 @@ describe "Heroku Commands", ->
       room.user.say "Damon", "hubot heroku config shield-global-watch"
 
       setTimeout(->
-        expect(room.messages[1][1]).to.equal("@Damon Getting config keys for shield-global-watch")
-        expect(room.messages[2][1]).to.equal("@Damon CLOAK, COMMANDER, AUTOPILOT, PILOT_NAME")
+        if useAuth
+          expect(room.messages[1][1]).to.equal(deniedMessage)
+        else
+          expect(room.messages[1][1]).to.equal("@Damon Getting config keys for shield-global-watch")
+          expect(room.messages[2][1]).to.equal("@Damon CLOAK, COMMANDER, AUTOPILOT, PILOT_NAME")
         done()
-      )
+      , duration)
 
   describe "heroku config:set <app> <KEY=value>", ->
     mockRequest = (keyPair) ->
@@ -164,8 +191,11 @@ describe "Heroku Commands", ->
       room.user.say "Damon", "hubot heroku config:set shield-global-watch CLOAK_ID=example.com"
 
       setTimeout(->
-        expect(room.messages[1][1]).to.equal("@Damon Setting config CLOAK_ID => example.com")
-        expect(room.messages[2][1]).to.equal("@Damon Heroku: CLOAK_ID is set to example.com")
+        if useAuth
+          expect(room.messages[1][1]).to.equal(deniedMessage)
+        else
+          expect(room.messages[1][1]).to.equal("@Damon Setting config CLOAK_ID => example.com")
+          expect(room.messages[2][1]).to.equal("@Damon Heroku: CLOAK_ID is set to example.com")
         done()
       , duration)
 
@@ -175,7 +205,10 @@ describe "Heroku Commands", ->
       room.user.say "Damon", "hubot heroku config:set shield-global-watch UUID=d5126f0d-b3be-46af-883f-b330a73964f9"
 
       setTimeout(->
-        expect(room.messages[2][1]).to.equal("@Damon Heroku: UUID is set to d5126f0d-b3be-46af-883f-b330a73964f9")
+        if useAuth
+          expect(room.messages[1][1]).to.equal(deniedMessage)
+        else
+          expect(room.messages[2][1]).to.equal("@Damon Heroku: UUID is set to d5126f0d-b3be-46af-883f-b330a73964f9")
         done()
       , duration)
 
@@ -185,7 +218,10 @@ describe "Heroku Commands", ->
       room.user.say "Damon", "hubot heroku config:set shield-global-watch PUSHER_URL=http://c0d9g8najfcc4634kd3:cf2eeas0d8dghfa847d@api.pusherapp.com/apps/1234"
 
       setTimeout(->
-        expect(room.messages[2][1]).to.equal("@Damon Heroku: PUSHER_URL is set to http://c0d9g8najfcc4634kd3:cf2eeas0d8dghfa847d@api.pusherapp.com/apps/1234")
+        if useAuth
+          expect(room.messages[1][1]).to.equal(deniedMessage)
+        else
+          expect(room.messages[2][1]).to.equal("@Damon Heroku: PUSHER_URL is set to http://c0d9g8najfcc4634kd3:cf2eeas0d8dghfa847d@api.pusherapp.com/apps/1234")
         done()
       , duration)
 
@@ -195,7 +231,10 @@ describe "Heroku Commands", ->
       room.user.say "Damon", "hubot heroku config:set shield-global-watch COMMA_DELIMITED_STRING=MiD,DA,MDe"
 
       setTimeout(->
-        expect(room.messages[2][1]).to.equal("@Damon Heroku: COMMA_DELIMITED_STRING is set to MiD,DA,MDe")
+        if useAuth
+          expect(room.messages[1][1]).to.equal(deniedMessage)
+        else
+          expect(room.messages[2][1]).to.equal("@Damon Heroku: COMMA_DELIMITED_STRING is set to MiD,DA,MDe")
         done()
       , duration)
 
@@ -205,7 +244,10 @@ describe "Heroku Commands", ->
       room.user.say "Damon", "hubot heroku config:set shield-global-watch SENTENCE=\"Don't stop believin.\""
 
       setTimeout(->
-        expect(room.messages[2][1]).to.equal("@Damon Heroku: SENTENCE is set to Don\'t stop believin.")
+        if useAuth
+          expect(room.messages[1][1]).to.equal(deniedMessage)
+        else
+          expect(room.messages[2][1]).to.equal("@Damon Heroku: SENTENCE is set to Don\'t stop believin.")
         done()
       , duration)
 
@@ -215,7 +257,10 @@ describe "Heroku Commands", ->
       room.user.say "Damon", "hubot heroku config:set shield-global-watch RSA_SECRET_KEY=\"----BEGIN RSA PRIVATE KEY-----\nsfsdfdssfdsFDSFDGSDfsdfsfs\nSDfSDFdUbOfFRocKsSFDSFSDFDS=\n-----END RSA PRIVATE KEY-----\n\""
 
       setTimeout(->
-        expect(room.messages[2][1]).to.equal("@Damon Heroku: RSA_SECRET_KEY is set to \"----BEGIN RSA PRIVATE KEY-----\nsfsdfdssfdsFDSFDGSDfsdfsfs\nSDfSDFdUbOfFRocKsSFDSFSDFDS=\n-----END RSA PRIVATE KEY-----\n\"")
+        if useAuth
+          expect(room.messages[1][1]).to.equal(deniedMessage)
+        else
+          expect(room.messages[2][1]).to.equal("@Damon Heroku: RSA_SECRET_KEY is set to \"----BEGIN RSA PRIVATE KEY-----\nsfsdfdssfdsFDSFDGSDfsdfsfs\nSDfSDFdUbOfFRocKsSFDSFSDFDS=\n-----END RSA PRIVATE KEY-----\n\"")
         done()
       , duration)
 
@@ -230,8 +275,10 @@ describe "Heroku Commands", ->
       room.user.say "Damon", "hubot heroku config:unset shield-global-watch CLOAK_ID"
 
       setTimeout(->
-        expect(room.messages[1][1]).to.equal("@Damon Unsetting config CLOAK_ID")
-        expect(room.messages[2][1]).to.equal("@Damon Heroku: CLOAK_ID has been unset")
+        if useAuth
+          expect(room.messages[1][1]).to.equal(deniedMessage)
+        else
+          expect(room.messages[1][1]).to.equal("@Damon Unsetting config CLOAK_ID")
+          expect(room.messages[2][1]).to.equal("@Damon Heroku: CLOAK_ID has been unset")
         done()
       , duration)
-

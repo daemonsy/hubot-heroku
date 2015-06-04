@@ -4,7 +4,7 @@
   "description": "Run heroku commands via hubot without direct access to Heroku",
   "main": "index.js",
   "scripts": {
-    "test": "node_modules/.bin/mocha"
+    "test": "node_modules/.bin/mocha; HUBOT_HEROKU_USE_AUTH=true node_modules/.bin/mocha"
   },
   "repository": {
     "type": "git",
@@ -31,6 +31,7 @@
     "coffee-script": "^1.8.0",
     "dotenv": "^0.4.0",
     "hubot": "^2.9.3",
+    "hubot-auth": "^1.2.0",
     "hubot-scripts": "^2.5.16",
     "hubot-test-helper": "0.0.2",
     "mocha": "^2.0.1",
