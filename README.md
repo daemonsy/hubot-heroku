@@ -46,6 +46,7 @@ Use `hubot help` to look for the commands. They are all prefixed by heroku. (e.g
 Some commands (hubot help will be a better source of truth):
 
 - `hubot heroku info <app>` - Returns useful information about the app
+- `hubot heroku dynos <app>` - Lists all dynos and their status
 - `hubot heroku releases <app>` - Latest 10 releases
 - `hubot heroku rollback <app>` <version> - Rollback to a release
 - `hubot heroku restart <app> <dyno>` - Restarts the specified app or dyno/s (e.g. `worker` or `web.2`)
