@@ -63,7 +63,7 @@ module.exports = (robot) ->
 
     msg.reply "Getting dynos of #{appName}"
 
-    heroku.apps(appName).info (error, dynos) ->
+    heroku.apps(appName).dynos().list (error, dynos) ->
       output = []
       if dynos
         output.push "Dynos of #{appName}"
@@ -77,9 +77,10 @@ module.exports = (robot) ->
             output.push "=== #{dyno.type} (#{dyno.size}): `#{dyno.command}`"
             lastFormation = currentFormation
 
-          updatedAt = moment(dyno.updated_at, 'YYYY/MM/DD HH:mm:ss')
-          timeAgo = moment(dyno.updated_at).fromNow()
-          output.push "#{dyno.name}: #{dyno.state} #{updatedAt} (~ #{timeAgo})"
+          updatedAt = moment(dyno.updated_at)
+          updatedTime = updatedAt.format('YYYY/MM/DD HH:mm:ss')
+          timeAgo = updatedAt.fromNow()
+          output.push "#{dyno.name}: #{dyno.state} #{updatedTime} (~ #{timeAgo})"
 
       respondToUser(msg, error, output.join("\n"))
 
