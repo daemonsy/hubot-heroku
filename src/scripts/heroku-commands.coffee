@@ -11,7 +11,7 @@
 #   hubot heroku info <app> - Returns useful information about the app
 #   hubot heroku releases <app> - Latest 10 releases
 #   hubot heroku rollback <app> <version> - Rollback to a release
-#   hubot heroku restart <app> <dyno> - Restarts the specified app or dyno/s
+#   hubot heroku restart <app> <dyno> - Restarts the specified app or dyno/s (e.g. worker or web.2)
 #   hubot heroku migrate <app> - Runs migrations. Remember to restart the app =)
 #   hubot heroku config <app> - Get config keys for the app. Values not given for security
 #   hubot heroku config:set <app> <KEY=value> - Set KEY to value. Case sensitive and overrides present key
