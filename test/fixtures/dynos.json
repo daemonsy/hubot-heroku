@@ -1,0 +1,47 @@
+[
+  {
+    "attach_url": "rendezvous://rendezvous.runtime.heroku.com:5000/{rendezvous-id}",
+    "command": "forever server.js",
+    "created_at": "2012-01-01T12:00:00Z",
+    "id": "01234567-89ab-cdef-0123-456789abcdef",
+    "name": "web.1",
+    "release": {
+      "id": "01234567-89ab-cdef-0123-456789abcdef",
+      "version": 11
+    },
+    "size": "1X",
+    "state": "up",
+    "type": "web",
+    "updated_at": "2015-01-01T12:00:00Z"
+  },
+  {
+    "attach_url": "rendezvous://rendezvous.runtime.heroku.com:5000/{rendezvous-id}",
+    "command": "forever server.js",
+    "created_at": "2012-01-01T12:00:00Z",
+    "id": "01234567-89ab-cdef-0123-456789abcdef",
+    "name": "web.2",
+    "release": {
+      "id": "01234567-89ab-cdef-0123-456789abcdef",
+      "version": 11
+    },
+    "size": "1X",
+    "state": "crashed",
+    "type": "web",
+    "updated_at": "2015-01-01T12:00:00Z"
+  },
+  {
+    "attach_url": "rendezvous://rendezvous.runtime.heroku.com:5000/{rendezvous-id}",
+    "command": "celery worker",
+    "created_at": "2012-01-01T12:00:00Z",
+    "id": "01234567-89ab-cdef-0123-456789abcdef",
+    "name": "worker.1",
+    "release": {
+      "id": "01234567-89ab-cdef-0123-456789abcdef",
+      "version": 11
+    },
+    "size": "2X",
+    "state": "up",
+    "type": "worker",
+    "updated_at": "2015-06-01T12:00:00Z"
+  }
+]
