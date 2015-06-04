@@ -30,7 +30,7 @@ describe "Heroku Commands", ->
     expect(commands).to.include("hubot heroku info <app> - Returns useful information about the app")
     expect(commands).to.include("hubot heroku releases <app> - Latest 10 releases")
     expect(commands).to.include("hubot heroku rollback <app> <version> - Rollback to a release")
-    expect(commands).to.include("hubot heroku restart <app> <dyno> - Restarts the specified app or dyno/s")
+    expect(commands).to.include("hubot heroku restart <app> <dyno> - Restarts the specified app or dyno/s (e.g. worker or web.2)")
     expect(commands).to.include("hubot heroku migrate <app> - Runs migrations. Remember to restart the app =)")
     expect(commands).to.include("hubot heroku config <app> - Get config keys for the app. Values not given for security")
     expect(commands).to.include("hubot heroku config:set <app> <KEY=value> - Set KEY to value. Case sensitive and overrides present key")
