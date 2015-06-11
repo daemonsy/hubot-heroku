@@ -66,10 +66,13 @@ describe "Heroku Commands#{withAuth}", ->
       room.user.say "Damon", "hubot heroku dynos shield-global-watch"
 
       setTimeout(->
-        expect(room.messages[1][1]).to.equal("@Damon Getting dynos of shield-global-watch")
-        expect(room.messages[2][1]).to.include("@Damon Dynos of shield-global-watch\n=== web (1X): `forever server.js`\nweb.1: up 2015/01/01 12:00:00")
-        expect(room.messages[2][1]).to.include("\nweb.2: crashed 2015/01/01 12:00:00")
-        expect(room.messages[2][1]).to.include("\n\n=== worker (2X): `celery worker`\nworker.1: up 2015/06/01 12:00:00")
+        if useAuth
+          expect(room.messages[1][1]).to.equal(deniedMessage)
+        else
+          expect(room.messages[1][1]).to.equal("@Damon Getting dynos of shield-global-watch")
+          expect(room.messages[2][1]).to.include("@Damon Dynos of shield-global-watch\n=== web (1X): `forever server.js`\nweb.1: up 2015/01/01 12:00:00")
+          expect(room.messages[2][1]).to.include("\nweb.2: crashed 2015/01/01 12:00:00")
+          expect(room.messages[2][1]).to.include("\n\n=== worker (2X): `celery worker`\nworker.1: up 2015/06/01 12:00:00")
         done()
       , duration)
 
@@ -150,8 +153,11 @@ describe "Heroku Commands#{withAuth}", ->
       room.user.say "Damon", "hubot heroku restart shield-global-watch web"
 
       setTimeout(->
-        expect(room.messages[1][1]).to.equal("@Damon Telling Heroku to restart shield-global-watch web")
-        expect(room.messages[2][1]).to.equal("@Damon Heroku: Restarting shield-global-watch web")
+        if useAuth
+          expect(room.messages[1][1]).to.equal(deniedMessage)
+        else
+          expect(room.messages[1][1]).to.equal("@Damon Telling Heroku to restart shield-global-watch web")
+          expect(room.messages[2][1]).to.equal("@Damon Heroku: Restarting shield-global-watch web")
         done()
       , duration)
 
@@ -163,8 +169,11 @@ describe "Heroku Commands#{withAuth}", ->
       room.user.say "Damon", "hubot heroku restart shield-global-watch web.1"
 
       setTimeout(->
-        expect(room.messages[1][1]).to.equal("@Damon Telling Heroku to restart shield-global-watch web.1")
-        expect(room.messages[2][1]).to.equal("@Damon Heroku: Restarting shield-global-watch web.1")
+        if useAuth
+          expect(room.messages[1][1]).to.equal(deniedMessage)
+        else
+          expect(room.messages[1][1]).to.equal("@Damon Telling Heroku to restart shield-global-watch web.1")
+          expect(room.messages[2][1]).to.equal("@Damon Heroku: Restarting shield-global-watch web.1")
         done()
       , duration)
 

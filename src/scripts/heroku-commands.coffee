@@ -74,6 +74,8 @@ module.exports = (robot) ->
   robot.respond /heroku dynos (.*)/i, (msg) ->
     appName = msg.match[1]
 
+    return unless auth(msg, appName)
+
     msg.reply "Getting dynos of #{appName}"
 
     heroku.apps(appName).dynos().list (error, dynos) ->
@@ -141,7 +143,7 @@ module.exports = (robot) ->
     dynoName = msg.match[2]
     dynoNameText = if dynoName then ' '+dynoName else ''
 
-	return unless auth(msg, appName)
+    return unless auth(msg, appName)
 
     msg.reply "Telling Heroku to restart #{appName}#{dynoNameText}"
 
