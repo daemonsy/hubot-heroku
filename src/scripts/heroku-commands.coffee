@@ -79,7 +79,7 @@ module.exports = (robot) ->
             lastFormation = currentFormation
 
           updatedAt = moment(dyno.updated_at)
-          updatedTime = updatedAt.format('YYYY/MM/DD HH:mm:ss')
+          updatedTime = updatedAt.utc().format('YYYY/MM/DD HH:mm:ss')
           timeAgo = updatedAt.fromNow()
           output.push "#{dyno.name}: #{dyno.state} #{updatedTime} (~ #{timeAgo})"
 

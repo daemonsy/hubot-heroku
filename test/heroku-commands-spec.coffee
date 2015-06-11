@@ -61,9 +61,9 @@ describe "Heroku Commands", ->
 
       setTimeout(->
         expect(room.messages[1][1]).to.equal("@Damon Getting dynos of shield-global-watch")
-        expect(room.messages[2][1]).to.include("@Damon Dynos of shield-global-watch\n=== web (1X): `forever server.js`\nweb.1: up 2015/01/01 07:00:00")
-        expect(room.messages[2][1]).to.include("\nweb.2: crashed 2015/01/01 07:00:00")
-        expect(room.messages[2][1]).to.include("\n\n=== worker (2X): `celery worker`\nworker.1: up 2015/06/01 08:00:00")
+        expect(room.messages[2][1]).to.include("@Damon Dynos of shield-global-watch\n=== web (1X): `forever server.js`\nweb.1: up 2015/01/01 12:00:00")
+        expect(room.messages[2][1]).to.include("\nweb.2: crashed 2015/01/01 12:00:00")
+        expect(room.messages[2][1]).to.include("\n\n=== worker (2X): `celery worker`\nworker.1: up 2015/06/01 12:00:00")
         done()
       , duration)
 
