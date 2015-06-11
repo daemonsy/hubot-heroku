@@ -9,9 +9,10 @@
 #
 # Commands:
 #   hubot heroku info <app> - Returns useful information about the app
+#   hubot heroku dynos <app> - Lists all dynos and their status
 #   hubot heroku releases <app> - Latest 10 releases
 #   hubot heroku rollback <app> <version> - Rollback to a release
-#   hubot heroku restart <app> - Restarts the app
+#   hubot heroku restart <app> <dyno> - Restarts the specified app or dyno/s (e.g. worker or web.2)
 #   hubot heroku migrate <app> - Runs migrations. Remember to restart the app =)
 #   hubot heroku config <app> - Get config keys for the app. Values not given for security
 #   hubot heroku config:set <app> <KEY=value> - Set KEY to value. Case sensitive and overrides present key
@@ -24,6 +25,7 @@ Heroku = require('heroku-client')
 heroku = new Heroku(token: process.env.HUBOT_HEROKU_API_KEY)
 _      = require('lodash')
 mapper = require('../heroku-response-mapper')
+moment = require('moment')
 useAuth = (process.env.HUBOT_HEROKU_USE_AUTH or '').trim().toLowerCase() is 'true'
 
 module.exports = (robot) ->
@@ -68,6 +70,33 @@ module.exports = (robot) ->
     heroku.apps(appName).info (error, info) ->
       respondToUser(msg, error, "\n" + objectToMessage(mapper.info(info)))
 
+  # Dynos
+  robot.respond /heroku dynos (.*)/i, (msg) ->
+    appName = msg.match[1]
+
+    msg.reply "Getting dynos of #{appName}"
+
+    heroku.apps(appName).dynos().list (error, dynos) ->
+      output = []
+      if dynos
+        output.push "Dynos of #{appName}"
+        lastFormation = ""
+
+        for dyno in dynos
+          currentFormation = "#{dyno.type}.#{dyno.size}"
+
+          unless currentFormation is lastFormation
+            output.push "" if lastFormation
+            output.push "=== #{dyno.type} (#{dyno.size}): `#{dyno.command}`"
+            lastFormation = currentFormation
+
+          updatedAt = moment(dyno.updated_at)
+          updatedTime = updatedAt.utc().format('YYYY/MM/DD HH:mm:ss')
+          timeAgo = updatedAt.fromNow()
+          output.push "#{dyno.name}: #{dyno.state} #{updatedTime} (~ #{timeAgo})"
+
+      respondToUser(msg, error, output.join("\n"))
+
   # Releases
   robot.respond /heroku releases (.*)$/i, (msg) ->
     appName = msg.match[1]
@@ -107,15 +136,21 @@ module.exports = (robot) ->
           respondToUser(msg, error, "Success! v#{release.version} -> Rollback to #{version}")
 
   # Restart
-  robot.respond /heroku restart (.*)/i, (msg) ->
+  robot.respond /heroku restart ([\w-]+)\s?(\w+(?:\.\d+)?)?/i, (msg) ->
     appName = msg.match[1]
+    dynoName = msg.match[2]
+    dynoNameText = if dynoName then ' '+dynoName else ''
 
-    return unless auth(msg, appName)
+	return unless auth(msg, appName)
 
-    msg.reply "Telling Heroku to restart #{appName}"
+    msg.reply "Telling Heroku to restart #{appName}#{dynoNameText}"
 
-    heroku.apps(appName).dynos().restartAll (error, app) ->
-      respondToUser(msg, error, "Heroku: Restarting #{appName}")
+    unless dynoName
+      heroku.apps(appName).dynos().restartAll (error, app) ->
+        respondToUser(msg, error, "Heroku: Restarting #{appName}")
+    else
+      heroku.apps(appName).dynos(dynoName).restart (error, app) ->
+        respondToUser(msg, error, "Heroku: Restarting #{appName}#{dynoNameText}")
 
   # Migration
   robot.respond /heroku migrate (.*)/i, (msg) ->
