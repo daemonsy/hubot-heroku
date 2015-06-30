@@ -23,6 +23,16 @@ Deployment usually involves some form of CI process. Hence it is best suited for
 
 This robot is focused on letting you run auxiliary commands around the heroku system, so developers don't have to be given production access to independently manage deployments.
 
+## Auth
+You can restrict command usage to specific roles using the [hubot-auth](https://github.com/hubot-scripts/hubot-auth) package. Role names take the form `heroku-<app>`.
+
+To enable auth:
+
+1. `npm install hubot-auth --save`
+2. Add `hubot-auth` to `external-scripts.json` (e.g. `["hubot-auth", "some-other-plugin"]`)
+3. Set `HUBOT_HEROKU_USE_AUTH` to `true`.
+4. Assign roles: `hubot <user> has heroku-<app> role`
+
 ## Security
 You can set config variables using this. Hence the Heroku API key used should not have access to your hubot instance on Heroku. For example:
 
@@ -30,6 +40,8 @@ You can set config variables using this. Hence the Heroku API key used should no
 hubot heroku config:set my-hubot HUBOT_ADMIN=dr_evil
 # Muhaha, now I'm to use hubot's other commands to take over the world
 ```
+
+You can also avoid this if you are using auth as described above, in which case you can ensure only admins have the role necessary to set config variables on the hubot instance.
 
 ## Installation
 1. `npm install hubot-heroku --save`

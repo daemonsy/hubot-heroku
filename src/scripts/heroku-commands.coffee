@@ -26,8 +26,18 @@ heroku = new Heroku(token: process.env.HUBOT_HEROKU_API_KEY)
 _      = require('lodash')
 mapper = require('../heroku-response-mapper')
 moment = require('moment')
+useAuth = (process.env.HUBOT_HEROKU_USE_AUTH or '').trim().toLowerCase() is 'true'
 
 module.exports = (robot) ->
+  auth = (msg, appName) ->
+    role = "heroku-#{appName}"
+    hasRole = robot.auth.hasRole(msg.envelope.user, role)
+    isAdmin = robot.auth.hasRole(msg.envelope.user, 'admin')
+    if useAuth and not (hasRole or isAdmin)
+      msg.reply "Access denied. You must have this role to use this command: #{role}"
+      return false
+    return true
+
   respondToUser = (robotMessage, error, successMessage) ->
     if error
       robotMessage.reply "Shucks. An error occurred. #{error.statusCode} - #{error.body.message}"
@@ -53,6 +63,8 @@ module.exports = (robot) ->
   robot.respond /heroku info (.*)/i, (msg) ->
     appName = msg.match[1]
 
+    return unless auth(msg, appName)
+
     msg.reply "Getting information about #{appName}"
 
     heroku.apps(appName).info (error, info) ->
@@ -61,6 +73,8 @@ module.exports = (robot) ->
   # Dynos
   robot.respond /heroku dynos (.*)/i, (msg) ->
     appName = msg.match[1]
+
+    return unless auth(msg, appName)
 
     msg.reply "Getting dynos of #{appName}"
 
@@ -89,6 +103,8 @@ module.exports = (robot) ->
   robot.respond /heroku releases (.*)$/i, (msg) ->
     appName = msg.match[1]
 
+    return unless auth(msg, appName)
+
     msg.reply "Getting releases for #{appName}"
 
     heroku.apps(appName).releases().list (error, releases) ->
@@ -105,6 +121,8 @@ module.exports = (robot) ->
   robot.respond /heroku rollback (.*) (.*)$/i, (msg) ->
     appName = msg.match[1]
     version = msg.match[2]
+
+    return unless auth(msg, appName)
 
     if version.match(/v\d+$/)
       msg.reply "Telling Heroku to rollback to #{version}"
@@ -125,6 +143,8 @@ module.exports = (robot) ->
     dynoName = msg.match[2]
     dynoNameText = if dynoName then ' '+dynoName else ''
 
+    return unless auth(msg, appName)
+
     msg.reply "Telling Heroku to restart #{appName}#{dynoNameText}"
 
     unless dynoName
@@ -137,6 +157,8 @@ module.exports = (robot) ->
   # Migration
   robot.respond /heroku migrate (.*)/i, (msg) ->
     appName = msg.match[1]
+
+    return unless auth(msg, appName)
 
     msg.reply "Telling Heroku to migrate #{appName}"
 
@@ -157,6 +179,8 @@ module.exports = (robot) ->
   robot.respond /heroku config (.*)$/i, (msg) ->
     appName = msg.match[1]
 
+    return unless auth(msg, appName)
+
     msg.reply "Getting config keys for #{appName}"
 
     heroku.apps(appName).configVars().info (error, configVars) ->
@@ -170,6 +194,8 @@ module.exports = (robot) ->
     key     = msg.match[2]
     value   = msg.match[4] || msg.match[5] || msg.match[6] # :sad_panda:
 
+    return unless auth(msg, appName)
+
     msg.reply "Setting config #{key} => #{value}"
 
     keyPair[key] = value
@@ -182,6 +208,8 @@ module.exports = (robot) ->
     appName = msg.match[1]
     key     = msg.match[2]
     value   = msg.match[3]
+
+    return unless auth(msg, appName)
 
     msg.reply "Unsetting config #{key}"
 
