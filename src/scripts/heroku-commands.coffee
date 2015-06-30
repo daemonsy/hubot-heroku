@@ -164,7 +164,6 @@ module.exports = (robot) ->
 
     heroku.apps(appName).dynos().create
       command: "rake db:migrate"
-      size: "1X"
       attach: false
     , (error, dyno) ->
       respondToUser(msg, error, "Heroku: Running migrations for #{appName}")
