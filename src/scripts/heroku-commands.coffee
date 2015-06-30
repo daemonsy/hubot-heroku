@@ -3,6 +3,7 @@
 #
 # Dependencies:
 #   "heroku-client": "^1.9.0"
+#   "hubot-auth": "^1.2.0"
 #
 # Configuration:
 #   HUBOT_HEROKU_API_KEY
