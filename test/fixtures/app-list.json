@@ -1,0 +1,16 @@
+[
+  {
+    "name": "shield-global-watch",
+    "web_url": "https://shield-global-watch.herokuapp.com/",
+    "git_url": "git@heroku.com:shield-global-watch.git",
+    "last_release": "2014-12-12T02:16:59Z",
+    "unsafe_key": "Doomed if we're seeing this"
+  },
+  {
+    "name": "shield-global-watch-staging",
+    "web_url": "https://shield-global-watch-staging.herokuapp.com/",
+    "git_url": "git@heroku.com:shield-global-watch-staging.git",
+    "last_release": "2015-01-01T02:16:59Z",
+    "unsafe_key": "No one should be seeing this"
+  }
+]

@@ -1,3 +1,5 @@
+moment = require("moment")
+
 module.exports =
   info: (response) ->
     name:         response.name
@@ -10,3 +12,9 @@ module.exports =
     git_url:      response.git_url
     buildpack:    response.buildpack_provided_description
     stack:        response.build_stack && response.build_stack.name
+
+  appShortInfo: (response) ->
+    name:         response.name
+    url:          response.web_url
+    git_url:      response.git_url
+    last_release: "#{moment(response.released_at).fromNow()} ago"

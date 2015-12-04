@@ -42,6 +42,35 @@ describe "Heroku Commands", ->
     expect(commands).to.include("hubot heroku config:set <app> <KEY=value> - Set KEY to value. Case sensitive and overrides present key")
     expect(commands).to.include("hubot heroku config:unset <app> <KEY> - Unsets KEY, does not throw error if key is not present")
 
+  describe "heroku list apps <app name>", ->
+    beforeEach ->
+      mockHeroku
+        .get("/apps")
+        .replyWithFile(200, __dirname + "/fixtures/app-list.json")
+
+    describe "when given an argument <app name>", ->
+      it "returns a list of the apps filtered by <app name>", (done) ->
+        room.user.say "Damon", "hubot heroku list apps staging"
+
+        waitForReplies 3, room, ->
+          expect(room.messages[1][1]).to.equal("@Damon Listing apps matching: staging")
+          expect(room.messages[2][1]).to.not.contain(/shield-global-watch\b/)
+          expect(room.messages[2][1]).to.contain("shield-global-watch-staging")
+
+          done()
+
+    describe "when the command is called without arguments" , ->
+      it "returns a list of all apps", (done) ->
+        room.user.say "Damon", "hubot heroku list apps"
+
+        waitForReplies 3, room, ->
+          expect(room.messages[1][1]).to.equal("@Damon Listing all apps available...")
+          expect(room.messages[2][1]).to.match(/shield-global-watch\b/)
+          expect(room.messages[2][1]).to.contain("shield-global-watch-staging")
+
+          done()
+
+
   describe "heroku info <app>", ->
     it "gets information about the app's dynos", (done) ->
       mockHeroku
