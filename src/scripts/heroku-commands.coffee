@@ -9,6 +9,7 @@
 #   HUBOT_HEROKU_API_KEY
 #
 # Commands:
+#   hubot heroku list apps <app name filter> - Lists all apps or filtered by the name
 #   hubot heroku info <app> - Returns useful information about the app
 #   hubot heroku dynos <app> - Lists all dynos and their status
 #   hubot heroku releases <app> - Latest 10 releases
@@ -22,18 +23,22 @@
 # Author:
 #   daemonsy
 
-Heroku = require('heroku-client')
+Heroku          = require('heroku-client')
+objectToMessage = require("../object-to-message")
+
 heroku = new Heroku(token: process.env.HUBOT_HEROKU_API_KEY)
 _      = require('lodash')
-mapper = require('../heroku-response-mapper')
 moment = require('moment')
 useAuth = (process.env.HUBOT_HEROKU_USE_AUTH or '').trim().toLowerCase() is 'true'
 
 module.exports = (robot) ->
   auth = (msg, appName) ->
-    role = "heroku-#{appName}"
-    hasRole = robot.auth.hasRole(msg.envelope.user, role)
+    if appName
+      role = "heroku-#{appName}"
+      hasRole = robot.auth.hasRole(msg.envelope.user, role)
+
     isAdmin = robot.auth.hasRole(msg.envelope.user, 'admin')
+
     if useAuth and not (hasRole or isAdmin)
       msg.reply "Access denied. You must have this role to use this command: #{role}"
       return false
@@ -45,31 +50,35 @@ module.exports = (robot) ->
     else
       robotMessage.reply successMessage
 
-  rpad = (string, width, padding = ' ') ->
-    if (width <= string.length) then string else rpad(width, string + padding, padding)
+  # App List
+  robot.respond /(heroku list apps)\s?(.*)/i, (msg) ->
+    return unless auth(msg)
 
-  objectToMessage = (object) ->
-    output = []
-    maxLength = 0
-    keys = Object.keys(object)
-    keys.forEach (key) ->
-      maxLength = key.length if key.length > maxLength
+    searchName = msg.match[2] if msg.match[2].length > 0
 
-    keys.forEach (key) ->
-      output.push "#{rpad(key, maxLength)} : #{object[key]}"
+    if searchName
+      msg.reply "Listing apps matching: #{searchName}"
+    else
+      msg.reply "Listing all apps available..."
 
-    output.join("\n")
+    heroku.apps().list (error, list) ->
+      list = list.filter (item) -> item.name.match(new RegExp(searchName, "i"))
+
+      result = if list.length > 0 then list.map((app) -> objectToMessage(app, "appShortInfo")).join("\n\n") else "No apps found"
+
+      respondToUser(msg, error, result)
 
   # App Info
   robot.respond /heroku info (.*)/i, (msg) ->
-    appName = msg.match[1]
-
     return unless auth(msg, appName)
+
+    appName = msg.match[1]
 
     msg.reply "Getting information about #{appName}"
 
     heroku.apps(appName).info (error, info) ->
-      respondToUser(msg, error, "\n" + objectToMessage(mapper.info(info)))
+      successMessage = "\n" + objectToMessage(info, "info") unless error
+      respondToUser(msg, error, successMessage)
 
   # Dynos
   robot.respond /heroku dynos (.*)/i, (msg) ->
