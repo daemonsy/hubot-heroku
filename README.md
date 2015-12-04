@@ -1,6 +1,9 @@
 hubot-heroku
 ======================
 
+[![npm version](https://badge.fury.io/js/hubot-heroku.svg)](https://github.com/daemonsy/hubot-heroku)
+[![CircleCI Status](https://circleci.com/gh/daemonsy/hubot-heroku.svg?style=shield)](https://github.com/daemonsy/hubot-heroku)
+
 A hubot library that exposes heroku commands via Heroku's Platform API, with focus of letting non privileged developers carry out tasks around deployments, but not run dangerous commands or get access to the data.
 
 ## Background
