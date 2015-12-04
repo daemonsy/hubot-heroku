@@ -57,6 +57,7 @@ The API key can be obtained here.
 Use `hubot help` to look for the commands. They are all prefixed by heroku. (e.g. `hubot heroku restart my-app`)
 Some commands (hubot help will be a better source of truth):
 
+- `hubot heroku list apps <app name filter>` - Lists all apps or filtered by the name
 - `hubot heroku info <app>` - Returns useful information about the app
 - `hubot heroku dynos <app>` - Lists all dynos and their status
 - `hubot heroku releases <app>` - Latest 10 releases

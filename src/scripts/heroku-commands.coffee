@@ -9,6 +9,7 @@
 #   HUBOT_HEROKU_API_KEY
 #
 # Commands:
+#   hubot heroku list apps <app name filter> - Lists all apps or filtered by the name
 #   hubot heroku info <app> - Returns useful information about the app
 #   hubot heroku dynos <app> - Lists all dynos and their status
 #   hubot heroku releases <app> - Latest 10 releases

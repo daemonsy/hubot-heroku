@@ -30,9 +30,10 @@ describe "Heroku Commands", ->
   it "exposes help commands", ->
     commands = room.robot.commands.filter (command) -> command.slice(0,12) is "hubot heroku"
 
-    expect(commands).to.have.length(9)
+    expect(commands).to.have.length(10)
 
     expect(commands).to.include("hubot heroku info <app> - Returns useful information about the app")
+    expect(commands).to.include("hubot heroku list apps <app name filter> - Lists all apps or filtered by the name")
     expect(commands).to.include("hubot heroku dynos <app> - Lists all dynos and their status")
     expect(commands).to.include("hubot heroku releases <app> - Latest 10 releases")
     expect(commands).to.include("hubot heroku rollback <app> <version> - Rollback to a release")
