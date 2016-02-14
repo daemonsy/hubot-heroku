@@ -4,6 +4,7 @@ HubotHelper = require("hubot-test-helper")
 path = require("path")
 chai = require("chai")
 nock = require("nock")
+moment = require("moment")
 
 process.env.HUBOT_HEROKU_API_KEY = 'fake_key'
 { expect } = chai
@@ -308,4 +309,38 @@ describe "Heroku Commands", ->
         expect(room.messages[1][1]).to.equal("@Damon Unsetting config CLOAK_ID")
         expect(room.messages[2][1]).to.equal("@Damon Heroku: CLOAK_ID has been unset")
 
+        done()
+
+  describe "heroku status", ->
+    it "responds with basic info if all services are green", (done) ->
+      mockHeroku
+        .get("/current-status")
+        .replyWithFile(200, __dirname + "/fixtures/status-green.json")
+
+      room.user.say "Damon", "hubot heroku status"
+
+      waitForReplies 3, room, ->
+        expect(room.messages[1][1]).to.equal("@Damon Checking Heroku Status...")
+
+        expect(room.messages[2][1]).to.contain("Production: green")
+        expect(room.messages[2][1]).to.contain("Development: green")
+        done()
+
+    it "responds with additional info if any of the services are not green", (done) ->
+      mockHeroku
+        .get("/current-status")
+        .replyWithFile(200, __dirname + "/fixtures/status-red.json")
+
+      room.user.say "Damon", "hubot heroku status"
+
+      waitForReplies 3, room, ->
+        expect(room.messages[1][1]).to.equal("@Damon Checking Heroku Status...")
+
+        expect(room.messages[2][1]).to.contain("Production: red")
+        expect(room.messages[2][1]).to.contain("Development: red")
+        expect(room.messages[3][1]).to.contain("Error when deploying certain apps")
+        expect(room.messages[3][1]).to.contain("Created: #{moment().format('2014-04-01T17:16:00Z')}")
+        expect(room.messages[3][1]).to.contain("Updated: #{moment().format('2014-04-02T06:03:49Z')}")
+        expect(room.messages[3][1]).to.contain("Resolved: true")
+        expect(room.messages[3][1]).to.contain("https://") # should have link to more details
         done()
