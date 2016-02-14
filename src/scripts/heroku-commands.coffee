@@ -226,3 +226,35 @@ module.exports = (robot) ->
 
     heroku.apps(appName).configVars().update keyPair, (error, response) ->
       respondToUser(msg, error, "Heroku: #{key} has been unset")
+
+  # Status
+  robot.respond /heroku status/i, (msg) ->
+    msg.reply "Checking Heroku Status..."
+
+    heroku.get "/current-status", (err, response) ->
+      msg.reply "Production: #{response.status.Production}" +
+                "Development: #{response.status.Development}"
+
+      if (response.status.Production != "green" || response.status.Development != "green")
+        issuesText = ""
+
+        for issue in response.issues
+          issueText = "========="
+          issueText += "\n"
+
+          issueText += issue.title
+          issueText += "\n"
+
+          issueText += "Resolved: #{issue.resolved}"
+          issueText += "\n"
+
+          issueText += "Created: #{moment().format(issue.created_at)}"
+          issueText += "\n"
+
+          issueText += "Updated: #{moment().format(issue.updated_at)}"
+          issueText += "\n"
+
+          issueText += issue.full_url
+
+          issuesText += issueText
+        msg.reply issuesText
