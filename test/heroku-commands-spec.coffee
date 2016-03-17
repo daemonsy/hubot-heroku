@@ -30,7 +30,7 @@ describe "Heroku Commands", ->
   it "exposes help commands", ->
     commands = room.robot.commands.filter (command) -> command.slice(0,12) is "hubot heroku"
 
-    expect(commands).to.have.length(10)
+    expect(commands).to.have.length(11)
 
     expect(commands).to.include("hubot heroku info <app> - Returns useful information about the app")
     expect(commands).to.include("hubot heroku list apps <app name filter> - Lists all apps or filtered by the name")
@@ -42,6 +42,7 @@ describe "Heroku Commands", ->
     expect(commands).to.include("hubot heroku config <app> - Get config keys for the app. Values not given for security")
     expect(commands).to.include("hubot heroku config:set <app> <KEY=value> - Set KEY to value. Case sensitive and overrides present key")
     expect(commands).to.include("hubot heroku config:unset <app> <KEY> - Unsets KEY, does not throw error if key is not present")
+    expect(commands).to.include("hubot heroku run rake <app> <task> - Runs a specific rake task")
 
   describe "heroku list apps <app name>", ->
     beforeEach ->
@@ -307,5 +308,34 @@ describe "Heroku Commands", ->
       waitForReplies 3, room, ->
         expect(room.messages[1][1]).to.equal("@Damon Unsetting config CLOAK_ID")
         expect(room.messages[2][1]).to.equal("@Damon Heroku: CLOAK_ID has been unset")
+
+        done()
+
+  describe "heroku run rake <app>", ->
+    beforeEach ->
+      mockHeroku
+        .post("/apps/shield-global-watch/dynos",
+          command: "rake some:task"
+          attach: false
+        ).replyWithFile(200, __dirname + "/fixtures/run-rake.json")
+
+      mockHeroku
+        .post("/apps/shield-global-watch/log-sessions",
+          dyno: "run.6454"
+          tail: true
+        ).replyWithFile(200, __dirname + "/fixtures/log-session.json")
+
+      room.user.say "Damon", "hubot heroku run rake shield-global-watch some:task"
+
+    it "runs migrations", (done) ->
+      waitForReplies 3, room, ->
+        expect(room.messages[1][1]).to.equal("@Damon Telling Heroku to run `rake some:task` on shield-global-watch")
+        expect(room.messages[2][1]).to.equal("@Damon Heroku: Running `rake some:task` for shield-global-watch")
+
+        done()
+
+    it "returns the logplex_url", (done) ->
+      waitForReplies 4, room, ->
+        expect(room.messages[3][1]).to.equal("@Damon View logs at: https://logplex.heroku.com/sessions/9d4f18cd-d9k8-39a5-ddef-a47dfa443z74?srv=1418011757")
 
         done()
