@@ -19,6 +19,7 @@
 #   hubot heroku config <app> - Get config keys for the app. Values not given for security
 #   hubot heroku config:set <app> <KEY=value> - Set KEY to value. Case sensitive and overrides present key
 #   hubot heroku config:unset <app> <KEY> - Unsets KEY, does not throw error if key is not present
+#   hubot heroku run rake <app> <task> - Runs a specific rake task
 #
 # Author:
 #   daemonsy
@@ -226,3 +227,24 @@ module.exports = (robot) ->
 
     heroku.apps(appName).configVars().update keyPair, (error, response) ->
       respondToUser(msg, error, "Heroku: #{key} has been unset")
+
+  # Run Rake
+  robot.respond /heroku run rake (.+) (.+)$/i, (msg) ->
+    appName = msg.match[1]
+    task = msg.match[2]
+
+    return unless auth(msg, appName)
+
+    msg.reply "Telling Heroku to run `rake #{task}` on #{appName}"
+
+    heroku.apps(appName).dynos().create
+      command: "rake #{task}"
+      attach: false
+    , (error, dyno) ->
+      respondToUser(msg, error, "Heroku: Running `rake #{task}` for #{appName}")
+
+      heroku.apps(appName).logSessions().create
+        dyno: dyno.name
+        tail: true
+      , (error, session) ->
+        respondToUser(msg, error, "View logs at: #{session.logplex_url}")
