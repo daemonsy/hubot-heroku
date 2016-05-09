@@ -30,7 +30,7 @@ describe "Heroku Commands", ->
   it "exposes help commands", ->
     commands = room.robot.commands.filter (command) -> command.slice(0,12) is "hubot heroku"
 
-    expect(commands).to.have.length(11)
+    expect(commands).to.have.length(12)
 
     expect(commands).to.include("hubot heroku info <app> - Returns useful information about the app")
     expect(commands).to.include("hubot heroku list apps <app name filter> - Lists all apps or filtered by the name")
@@ -43,6 +43,7 @@ describe "Heroku Commands", ->
     expect(commands).to.include("hubot heroku config:set <app> <KEY=value> - Set KEY to value. Case sensitive and overrides present key")
     expect(commands).to.include("hubot heroku config:unset <app> <KEY> - Unsets KEY, does not throw error if key is not present")
     expect(commands).to.include("hubot heroku run rake <app> <task> - Runs a specific rake task")
+    expect(commands).to.include("hubot heroku ps:scale <app> <type>=<size>(:<quantity>) - Scales dyno quantity up or down")
 
   describe "heroku list apps <app name>", ->
     beforeEach ->
@@ -337,5 +338,33 @@ describe "Heroku Commands", ->
     it "returns the logplex_url", (done) ->
       waitForReplies 4, room, ->
         expect(room.messages[3][1]).to.equal("@Damon View logs at: https://logplex.heroku.com/sessions/9d4f18cd-d9k8-39a5-ddef-a47dfa443z74?srv=1418011757")
+
+        done()
+
+  describe "heroku ps:scale", ->
+    mockRequest = (formation) ->
+      mockHeroku
+        .patch("/apps/shield-global-watch/formation/web", formation)
+        .replyWithFile(200, __dirname + "/fixtures/ps-scale.json")
+
+    it "scales dynos", ->
+      mockRequest({quantity: "2"})
+
+      room.user.say "Damon", "hubot heroku ps:scale shield-global-watch web=2"
+
+      waitForReplies 3, room, ->
+        expect(room.messages[1][1]).to equal("@Damon Telling Heroku to scale web dynos of shield-global-watch")
+        expect(room.messages[2][1]).to equal("@Damon Heroku: now running web at 2:standard-2X")
+
+        done()
+
+    it "scales and resizes dynos", ->
+      mockRequest({quantity: "2", size: "standard-2x"})
+
+      room.user.say "Damon", "hubot heroku ps:scale shield-global-watch web=2:standard-2X"
+
+      waitForReplies 3, room, ->
+        expect(room.messages[1][1]).to equal("@Damon Telling Heroku to scale web dynos of shield-global-watch")
+        expect(room.messages[2][1]).to equal("@Damon Heroku: now running web at 2:standard-2X")
 
         done()

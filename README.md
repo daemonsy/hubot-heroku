@@ -70,6 +70,7 @@ Some commands (hubot help will be a better source of truth):
 - `hubot heroku config <app>` - Get config keys for the app. Values not given for security
 - `hubot heroku config:set <app> <KEY=value>` - Set KEY to value. Case sensitive and overrides present key
 - `hubot heroku config:unset <app> <KEY>` - Unsets KEY, does not throw error if key is not present
+- `hubot heroku ps:scale <app> <type>=<size>(:<quantity>)` - Scales dyno quantity up or down
 
 For example, `hubot heroku config:set API_KEY=12345`
 

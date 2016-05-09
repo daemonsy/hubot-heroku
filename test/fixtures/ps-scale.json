@@ -1,0 +1,13 @@
+{
+  "app": {
+    "name": "shield-global-watch",
+    "id": "01234567-89ab-cdef-0123-456789abcdef"
+  },
+  "command": "bundle exec rails server -p $PORT",
+  "created_at": "2012-01-01T12:00:00Z",
+  "id": "01234567-89ab-cdef-0123-456789abcdef",
+  "quantity": 2,
+  "size": "standard-2X",
+  "type": "web",
+  "updated_at": "2012-01-01T12:00:00Z"
+}
