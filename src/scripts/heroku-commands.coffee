@@ -20,6 +20,7 @@
 #   hubot heroku config:set <app> <KEY=value> - Set KEY to value. Case sensitive and overrides present key
 #   hubot heroku config:unset <app> <KEY> - Unsets KEY, does not throw error if key is not present
 #   hubot heroku run rake <app> <task> - Runs a specific rake task
+#   hubot heroku ps:scale <app> <type>=<size>(:<quantity>) - Scales dyno quantity up or down
 #
 # Author:
 #   daemonsy
@@ -248,3 +249,19 @@ module.exports = (robot) ->
         tail: true
       , (error, session) ->
         respondToUser(msg, error, "View logs at: #{session.logplex_url}")
+
+  # Formations
+  robot.respond /heroku ps:scale (.+) ([^=]+)=([^:]+):(.*)$/i, (msg) ->
+    parameters = {}
+    appName = msg.match[1]
+    type = msg.match[2]
+    parameters.quantity = msg.match[3]
+    parameters.size = msg.match[4] if msg.match.size > 4
+
+    return unless auth(msg, appName)
+
+    msg.reply "Telling Heroku to scale #{type} dynos of #{appName}"
+
+    heroku.apps(appName).formation(type).update parameters, (error, formation) ->
+      output = "Heroku: now running #{formation.type} at #{formation.quantity}:#{formation.size}"
+      respondToUser(msg, error, output)
