@@ -6,6 +6,7 @@ chai = require("chai")
 nock = require("nock")
 
 process.env.HUBOT_HEROKU_API_KEY = 'fake_key'
+process.env.HUBOT_AUTH_ADMIN = 1
 { expect } = chai
 
 waitForReplies = (number, room, callback) ->
@@ -18,13 +19,14 @@ waitForReplies = (number, room, callback) ->
 
 describe "Heroku Commands", ->
   helper = new HubotHelper("../index.coffee")
-  room = helper.createRoom()
+  room = null
   mockHeroku = nock("https://api.heroku.com")
 
   beforeEach ->
-    room.messages = []
+    room = helper.createRoom()
 
   afterEach ->
+    room.destroy()
     nock.cleanAll()
 
   it "exposes help commands", ->
