@@ -72,12 +72,12 @@ module.exports = function(robot) {
       msg.reply("Listing all apps available...");
     }
 
-    return heroku.apps().list(function(error, list) {
+    return heroku.get(`/apps`).then((list) => {
       list = list.filter(item => item.name.match(new RegExp(searchName, "i")));
 
       let result = list.length > 0 ? list.map(app => objectToMessage(app, "appShortInfo")).join("\n\n") : "No apps found";
 
-      return respondToUser(msg, error, result);
+      return respondToUser(msg, null, result);
     });
   });
 
@@ -103,7 +103,7 @@ module.exports = function(robot) {
 
     msg.reply(`Getting dynos of ${appName}`);
 
-    return heroku.apps(appName).dynos().list(function(error, dynos) {
+    return heroku.get(`/apps/${appName}/dynos`).then((dynos) => {
       let output = [];
       if (dynos) {
         output.push(`Dynos of ${appName}`);
@@ -125,7 +125,7 @@ module.exports = function(robot) {
         }
       }
 
-      return respondToUser(msg, error, output.join("\n"));
+      return respondToUser(msg, null, output.join("\n"));
     });
   });
 
@@ -137,7 +137,7 @@ module.exports = function(robot) {
 
     msg.reply(`Getting releases for ${appName}`);
 
-    return heroku.apps(appName).releases().list(function(error, releases) {
+    return heroku.get(`/apps/${appName}/releases`).then((releases) => {
       let output = [];
       if (releases) {
         output.push(`Recent releases of ${appName}`);
@@ -147,7 +147,7 @@ module.exports = function(robot) {
         }
       }
 
-      return respondToUser(msg, error, output.join("\n"));
+      return respondToUser(msg, null, output.join("\n"));
     });
   });
 
@@ -161,13 +161,13 @@ module.exports = function(robot) {
     if (version.match(/v\d+$/)) {
       msg.reply(`Telling Heroku to rollback to ${version}`);
 
-      let app = heroku.apps(appName);
+      //let app = heroku.apps(appName);
       return app.releases().list(function(error, releases) {
         let release = _.find(releases, release => `v${release.version}` ===  version);
 
         if (!release) { return msg.reply(`Version ${version} not found for ${appName} :(`); }
 
-        return app.releases().rollback({release: release.id}, (error, release) => respondToUser(msg, error, `Success! v${release.version} -> Rollback to ${version}`));
+        return heroku.post(`apps/${appName}/releases`, {body: {release: release.id}}).then((release) => respondToUser(msg, null, `Success! v${release.version} -> Rollback to ${version}`));
       });
     }
   });
@@ -183,9 +183,9 @@ module.exports = function(robot) {
     msg.reply(`Telling Heroku to restart ${appName}${dynoNameText}`);
 
     if (!dynoName) {
-      return heroku.apps(appName).dynos().restartAll((error, app) => respondToUser(msg, error, `Heroku: Restarting ${appName}`));
+      return heroku.delete(`/apps/${appName}/dynos`).then((app) => respondToUser(msg, null, `Heroku: Restarting ${appName}`));
     } else {
-      return heroku.apps(appName).dynos(dynoName).restart((error, app) => respondToUser(msg, error, `Heroku: Restarting ${appName}${dynoNameText}`));
+      return heroku.delete(`/apps/${appName}/dynos/${dynoName}`).then((app) => respondToUser(msg, null, `Heroku: Restarting ${appName}${dynoNameText}`));
     }
   });
 
@@ -198,19 +198,17 @@ module.exports = function(robot) {
 
     msg.reply(`Telling Heroku to migrate ${appName}`);
 
-    return heroku.apps(appName).dynos().create({
+    return heroku.post(`/apps/${appName}/dynos`, {body: {
       command: "rake db:migrate",
       attach: false
-    }
-    , function(error, dyno) {
-      respondToUser(msg, error, `Heroku: Running migrations for ${appName}`);
+    }}).then((dyno) => {
+      respondToUser(msg, null, `Heroku: Running migrations for ${appName}`);
 
-      return heroku.apps(appName).logSessions().create({
+      return heroku.post(`/apps/${appName}/log-sessions`, {body: {
         dyno: dyno.name,
         tail: true
-      }
-      , (error, session) => respondToUser(msg, error, `View logs at: ${session.logplex_url}`));
-    });
+      }}).then((session) => respondToUser(msg, null, `View logs at: ${session.logplex_url}`));
+    })
   });
 
   // Config Vars
@@ -221,9 +219,9 @@ module.exports = function(robot) {
 
     msg.reply(`Getting config keys for ${appName}`);
 
-    return heroku.apps(appName).configVars().info(function(error, configVars) {
+    return heroku.get(`/apps/${appName}/config-vars`).then((configVars) => {
       let listOfKeys = configVars && Object.keys(configVars).join(", ");
-      return respondToUser(msg, error, listOfKeys);
+      return respondToUser(msg, null, listOfKeys);
     });
   });
 
@@ -240,14 +238,13 @@ module.exports = function(robot) {
 
     keyPair[key] = value;
 
-    return heroku.apps(appName).configVars().update(keyPair, (error, configVars) => respondToUser(msg, error, `Heroku: ${key} is set to ${configVars[key]}`));
+    return heroku.patch(`/apps/${appName}/config-vars`, {body: keyPair}).then(keyPair, (configVars) => respondToUser(msg, null, `Heroku: ${key} is set to ${configVars[key]}`));
   });
 
   robot.respond(/heroku config:unset (.*) (\w+)$/i, function(msg) {
     let keyPair = {};
     let appName = msg.match[1];
     let key     = msg.match[2];
-    let value   = msg.match[3];
 
     if (!auth(msg, appName)) { return; }
 
@@ -255,7 +252,7 @@ module.exports = function(robot) {
 
     keyPair[key] = null;
 
-    return heroku.apps(appName).configVars().update(keyPair, (error, response) => respondToUser(msg, error, `Heroku: ${key} has been unset`));
+    return heroku.patch(`/apps/${appName}/config-vars`, {body: keyPair}).then((response) => respondToUser(msg, null, `Heroku: ${key} has been unset`));
   });
 
   // Run Rake
@@ -294,9 +291,9 @@ module.exports = function(robot) {
 
     msg.reply(`Telling Heroku to scale ${type} dynos of ${appName}`);
 
-    return heroku.apps(appName).formation(type).update(parameters, function(error, formation) {
+    return heroku.patch(`/apps/${appName}/formation/${type}`, {body:parameters}).then((formation) => {
       let output = `Heroku: now running ${formation.type} at ${formation.quantity}:${formation.size}`;
-      return respondToUser(msg, error, output);
+      return respondToUser(msg, null, output);
     });
   });
 };
