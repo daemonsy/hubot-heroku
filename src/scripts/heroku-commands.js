@@ -286,13 +286,13 @@ module.exports = function(robot) {
   });
 
   // Formations
-  robot.respond(/heroku ps:scale (.+) ([^=]+)=([^:]+):(.*)$/i, function(msg) {
+  robot.respond(/heroku ps:scale (.+) ([^=]+)=([^:]+)(:.*)?$/i, function(msg) {
     let parameters = {};
     let appName = msg.match[1];
     let type = msg.match[2];
     parameters.quantity = msg.match[3];
 
-    if (msg.match.length > 4) { parameters.size = msg.match[4]; }
+    if (msg.match[4]) { parameters.size = msg.match[4].substring(1); }
 
     if (!auth(msg, appName)) { return; }
 
