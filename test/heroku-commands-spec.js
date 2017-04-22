@@ -28,7 +28,7 @@ describe("Heroku Commands", function() {
 
   afterEach(function() {
     room.destroy();
-    return nock.cleanAll();
+    nock.cleanAll();
   });
 
   it("exposes help commands", function() {
@@ -47,7 +47,7 @@ describe("Heroku Commands", function() {
     expect(commands).to.include("hubot heroku config:set <app> <KEY=value> - Set KEY to value. Case sensitive and overrides present key");
     expect(commands).to.include("hubot heroku config:unset <app> <KEY> - Unsets KEY, does not throw error if key is not present");
     expect(commands).to.include("hubot heroku run rake <app> <task> - Runs a specific rake task");
-    return expect(commands).to.include("hubot heroku ps:scale <app> <type>=<size>(:<quantity>) - Scales dyno quantity up or down");
+    expect(commands).to.include("hubot heroku ps:scale <app> <type>=<size>(:<quantity>) - Scales dyno quantity up or down");
   });
 
   describe("heroku list apps <app name>", function() {
@@ -408,8 +408,7 @@ describe("Heroku Commands", function() {
     let mockRequest = formation =>
       mockHeroku
         .patch("/apps/shield-global-watch/formation/web", formation)
-        .replyWithFile(200, __dirname + "/fixtures/ps-scale.json")
-    ;
+        .replyWithFile(200, __dirname + "/fixtures/ps-scale.json");
 
     it("scales dynos", function() {
       mockRequest({quantity: "2"});
@@ -420,20 +419,18 @@ describe("Heroku Commands", function() {
         expect(room.messages[1][1]).to(equal("@Damon Telling Heroku to scale web dynos of shield-global-watch"));
         expect(room.messages[2][1]).to(equal("@Damon Heroku: now running web at 2:standard-2X"));
 
-        return done();
+        done();
       });
     });
 
-    return it("scales and resizes dynos", function() {
-      mockRequest({quantity: "2", size: "standard-2x"});
+    it("scales and resizes dynos", done => {
+      mockRequest({ quantity: "2", size: "standard-2X" });
 
-      room.user.say("Damon", "hubot heroku ps:scale shield-global-watch web=2:standard-2X");
+      room.user.say("Damon", "hubot heroku ps:scale shield-global-watch web=2:standard-2X").then(() => {
+        expect(room.messages[1][1]).to.equal("@Damon Telling Heroku to scale web dynos of shield-global-watch");
+        expect(room.messages[2][1]).to.equal("@Damon Heroku: now running web at 2:standard-2X");
 
-      return waitForReplies(3, room, function() {
-        expect(room.messages[1][1]).to(equal("@Damon Telling Heroku to scale web dynos of shield-global-watch"));
-        expect(room.messages[2][1]).to(equal("@Damon Heroku: now running web at 2:standard-2X"));
-
-        return done();
+        done();
       });
     });
   });
