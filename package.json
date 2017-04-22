@@ -4,7 +4,8 @@
   "description": "Run heroku commands via hubot without direct access to Heroku",
   "main": "index.js",
   "scripts": {
-    "test": "node_modules/.bin/mocha"
+    "test": "mocha",
+    "test:debug": "mocha debug"
   },
   "repository": {
     "type": "git",
@@ -23,19 +24,19 @@
   },
   "homepage": "https://github.com/daemonsy/hubot-heroku",
   "dependencies": {
-    "heroku-client": "^1.9.0",
-    "lodash": "^2.4.1",
-    "hubot-auth": "^1.2.0",
+    "heroku-client": "^3.0.2",
+    "hubot-auth": "2.1.0",
+    "lodash": "^4.17.4",
     "moment": "^2.10.3"
   },
   "devDependencies": {
     "chai": "^1.10.0",
     "coffee-script": "^1.8.0",
     "dotenv": "^0.4.0",
-    "hubot": "^2.9.3",
+    "hubot": "2.19.0",
     "hubot-scripts": "^2.5.16",
-    "hubot-test-helper": "0.0.2",
-    "mocha": "^2.0.1",
+    "hubot-test-helper": "^1.5.1",
+    "mocha": "^3.2.0",
     "nock": "^0.51.0"
   }
 }
