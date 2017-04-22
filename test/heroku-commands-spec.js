@@ -153,13 +153,13 @@ describe("Heroku Commands", function() {
     });
 
     it("rolls back the app to the specified version", function(done) {
-      room.user.say("Damon", "hubot heroku rollback shield-global-watch v352");
+      room.user.say("Damon", "hubot heroku rollback shield-global-watch v352").then(() => {
+        waitForReplies(3, room, function() {
+          expect(room.messages[1][1]).to.equal("@Damon Rolling back to v352");
+          expect(room.messages[2][1]).to.equal("@Damon Success! v353 -> Rollback to v352");
 
-      return waitForReplies(3, room, function() {
-        expect(room.messages[1][1]).to.equal("@Damon Telling Heroku to rollback to v352");
-        expect(room.messages[2][1]).to.equal("@Damon Success! v353 -> Rollback to v352");
-
-        return done();
+          return done();
+        });
       });
     });
 
@@ -167,7 +167,7 @@ describe("Heroku Commands", function() {
       room.user.say("Damon", "hubot heroku rollback shield-global-watch v999");
 
       return waitForReplies(3, room, function() {
-        expect(room.messages[1][1]).to.equal("@Damon Telling Heroku to rollback to v999");
+        expect(room.messages[1][1]).to.match(/v999/);
         expect(room.messages[2][1]).to.equal("@Damon Version v999 not found for shield-global-watch :(");
 
         return done();
@@ -228,35 +228,32 @@ describe("Heroku Commands", function() {
         .post("/apps/shield-global-watch/dynos", {
           command: "rake db:migrate",
           attach: false
-        }
-        ).replyWithFile(200, __dirname + "/fixtures/migrate.json");
+        }).replyWithFile(200, __dirname + "/fixtures/migrate.json");
 
       mockHeroku
         .post("/apps/shield-global-watch/log-sessions", {
           dyno: "run.6454",
           tail: true
-        }
-        ).replyWithFile(200, __dirname + "/fixtures/log-session.json");
-
-      return room.user.say("Damon", "hubot heroku migrate shield-global-watch");
+        }).replyWithFile(200, __dirname + "/fixtures/log-session.json");
     });
 
-    it("runs migrations", done =>
-      waitForReplies(3, room, function() {
+    it("runs migrations", done => {
+      room.user.say("Damon", "hubot heroku migrate shield-global-watch").then(() => {
         expect(room.messages[1][1]).to.equal("@Damon Telling Heroku to migrate shield-global-watch");
         expect(room.messages[2][1]).to.equal("@Damon Heroku: Running migrations for shield-global-watch");
 
-        return done();
-      })
-    );
+        done();
+      });
+    });
 
-    return it("returns the logplex_url", done =>
-      waitForReplies(4, room, function() {
+    it("returns the logplex_url", done => {
+      room.user.say("Damon", "hubot heroku migrate shield-global-watch").then(() => {
+
         expect(room.messages[3][1]).to.equal("@Damon View logs at: https://logplex.heroku.com/sessions/9d4f18cd-d9k8-39a5-ddef-a47dfa443z74?srv=1418011757");
 
-        return done();
-      })
-    );
+        done();
+      });
+    });
   });
 
   describe("heroku config <app>", () =>
@@ -297,14 +294,12 @@ describe("Heroku Commands", function() {
     });
 
     it("handles UUIDs", function(done) {
-      mockRequest({"UUID": "d5126f0d-b3be-46af-883f-b330a73964f9"});
+      mockRequest({ "UUID": "d5126f0d-b3be-46af-883f-b330a73964f9" });
 
-      room.user.say("Damon", "hubot heroku config:set shield-global-watch UUID=d5126f0d-b3be-46af-883f-b330a73964f9");
-
-      return waitForReplies(3, room, function() {
+      room.user.say("Damon", "hubot heroku config:set shield-global-watch UUID=d5126f0d-b3be-46af-883f-b330a73964f9").then(() =>{
         expect(room.messages[2][1]).to.equal("@Damon Heroku: UUID is set to d5126f0d-b3be-46af-883f-b330a73964f9");
 
-        return done();
+        done();
       });
     });
 
@@ -376,43 +371,40 @@ describe("Heroku Commands", function() {
   );
 
   describe("heroku run rake <app>", function() {
-    beforeEach(function() {
+    beforeEach(() => {
       mockHeroku
         .post("/apps/shield-global-watch/dynos", {
           command: "rake some:task",
           attach: false
-        }
-        ).replyWithFile(200, __dirname + "/fixtures/run-rake.json");
+        }).replyWithFile(200, __dirname + "/fixtures/run-rake.json");
 
       mockHeroku
         .post("/apps/shield-global-watch/log-sessions", {
           dyno: "run.6454",
           tail: true
-        }
-        ).replyWithFile(200, __dirname + "/fixtures/log-session.json");
-
-      return room.user.say("Damon", "hubot heroku run rake shield-global-watch some:task");
+        }).replyWithFile(200, __dirname + "/fixtures/log-session.json");
     });
 
-    it("runs migrations", done =>
-      waitForReplies(3, room, function() {
+    it("runs migrations", done => {
+      room.user.say("Damon", "hubot heroku run rake shield-global-watch some:task").then(() => {
         expect(room.messages[1][1]).to.equal("@Damon Telling Heroku to run `rake some:task` on shield-global-watch");
+
         expect(room.messages[2][1]).to.equal("@Damon Heroku: Running `rake some:task` for shield-global-watch");
 
-        return done();
+        done();
       })
-    );
+    });
 
-    return it("returns the logplex_url", done =>
-      waitForReplies(4, room, function() {
+    it("returns the logplex_url", done => {
+      room.user.say("Damon", "hubot heroku run rake shield-global-watch some:task").then(() => {
         expect(room.messages[3][1]).to.equal("@Damon View logs at: https://logplex.heroku.com/sessions/9d4f18cd-d9k8-39a5-ddef-a47dfa443z74?srv=1418011757");
 
-        return done();
-      })
-    );
+        done();
+      });
+    });
   });
 
-  return describe("heroku ps:scale", function() {
+  describe("heroku ps:scale", function() {
     let mockRequest = formation =>
       mockHeroku
         .patch("/apps/shield-global-watch/formation/web", formation)

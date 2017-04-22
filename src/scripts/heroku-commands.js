@@ -159,16 +159,16 @@ module.exports = function(robot) {
     if (!auth(msg, appName)) { return; }
 
     if (version.match(/v\d+$/)) {
-      msg.reply(`Telling Heroku to rollback to ${version}`);
+      msg.reply(`Rolling back to ${version}`);
 
-      //let app = heroku.apps(appName);
-      return app.releases().list(function(error, releases) {
+      heroku.get(`/apps/${appName}/releases`).then(releases => {
         let release = _.find(releases, release => `v${release.version}` ===  version);
 
-        if (!release) { return msg.reply(`Version ${version} not found for ${appName} :(`); }
+        if (!release) { throw `Version ${version} not found for ${appName} :(`; }
 
-        return heroku.post(`apps/${appName}/releases`, {body: {release: release.id}}).then((release) => respondToUser(msg, null, `Success! v${release.version} -> Rollback to ${version}`));
-      });
+        return heroku.post(`/apps/${appName}/releases`, { body: { release: release.id } })
+      }).then(release => { respondToUser(msg, null, `Success! v${release.version} -> Rollback to ${version}`)})
+        .catch(error => msg.reply(error));
     }
   });
 
@@ -191,24 +191,27 @@ module.exports = function(robot) {
 
   // Migration
   robot.respond(/heroku migrate (.*)/i, function(msg) {
-    debugger;
     let appName = msg.match[1];
 
     if (!auth(msg, appName)) { return; }
 
     msg.reply(`Telling Heroku to migrate ${appName}`);
 
-    return heroku.post(`/apps/${appName}/dynos`, {body: {
-      command: "rake db:migrate",
-      attach: false
-    }}).then((dyno) => {
+    return heroku.post(`/apps/${appName}/dynos`, {
+      body: {
+        command: "rake db:migrate",
+        attach: false
+      }
+    }).then(dyno => {
       respondToUser(msg, null, `Heroku: Running migrations for ${appName}`);
 
-      return heroku.post(`/apps/${appName}/log-sessions`, {body: {
-        dyno: dyno.name,
-        tail: true
-      }}).then((session) => respondToUser(msg, null, `View logs at: ${session.logplex_url}`));
-    })
+      return heroku.post(`/apps/${appName}/log-sessions`, {
+        body: {
+          dyno: dyno.name,
+          tail: true
+        }
+      })
+    }).then(session => respondToUser(msg, null, `View logs at: ${session.logplex_url}`));
   });
 
   // Config Vars
@@ -238,8 +241,9 @@ module.exports = function(robot) {
 
     keyPair[key] = value;
 
-    return heroku.patch(`/apps/${appName}/config-vars`, {body: keyPair}).then(keyPair, (configVars) => respondToUser(msg, null, `Heroku: ${key} is set to ${configVars[key]}`));
-  });
+    heroku.patch(`/apps/${appName}/config-vars`, { body: keyPair })
+      .then(configVars => respondToUser(msg, null, `Heroku: ${key} is set to ${configVars[key]}`));
+  })
 
   robot.respond(/heroku config:unset (.*) (\w+)$/i, function(msg) {
     let keyPair = {};
@@ -264,19 +268,21 @@ module.exports = function(robot) {
 
     msg.reply(`Telling Heroku to run \`rake ${task}\` on ${appName}`);
 
-    return heroku.apps(appName).dynos().create({
-      command: `rake ${task}`,
-      attach: false
-    }
-    , function(error, dyno) {
-      respondToUser(msg, error, `Heroku: Running \`rake ${task}\` for ${appName}`);
-
-      return heroku.apps(appName).logSessions().create({
-        dyno: dyno.name,
-        tail: true
+    return heroku.post(`/apps/${appName}/dynos`, {
+      body: {
+        command: `rake ${task}`,
+        attach: false
       }
-      , (error, session) => respondToUser(msg, error, `View logs at: ${session.logplex_url}`));
-    });
+    }).then(dyno => {
+      respondToUser(msg, null, `Heroku: Running \`rake ${task}\` for ${appName}`);
+
+      return heroku.post(`/apps/${appName}/log-sessions`, {
+        body: {
+          dyno: dyno.name,
+          tail: true
+        }
+      })
+    }).then(session => respondToUser(msg, null, `View logs at: ${session.logplex_url}`));
   });
 
   // Formations
