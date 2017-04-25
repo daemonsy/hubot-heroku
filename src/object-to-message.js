@@ -18,5 +18,5 @@ module.exports = function(object, mapperName) {
 
   keys.forEach(key => output.push(`${rpad(key, maxLength)} : ${cleanedObject[key]}`));
 
-  return `\`\`\` \n ${output.join("\n")} \n\`\`\``;
+  return `\`\`\`\n${output.join("\n")}\n\`\`\``;
 };

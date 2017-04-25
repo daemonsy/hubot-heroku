@@ -28,7 +28,7 @@
 const Heroku = require('heroku-client');
 const objectToMessage = require("../object-to-message");
 
-let heroku = new Heroku({token: process.env.HUBOT_HEROKU_API_KEY});
+let heroku = new Heroku({ token: process.env.HUBOT_HEROKU_API_KEY });
 const _ = require('lodash');
 const moment = require('moment');
 let useAuth = (process.env.HUBOT_HEROKU_USE_AUTH || '').trim().toLowerCase() === 'true';
@@ -84,6 +84,7 @@ module.exports = function(robot) {
   // App Info
   robot.respond(/heroku info (.*)/i, function(msg) {
     if (!auth(msg, appName)) { return; }
+    console.log(msg)
 
     var appName = msg.match[1];
 

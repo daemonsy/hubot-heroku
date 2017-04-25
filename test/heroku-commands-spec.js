@@ -72,7 +72,6 @@ describe("Heroku Commands", () => {
     });
   });
 
-
   describe("heroku info <app>", () => {
     it("gets information about the app's dynos", done => {
       mockHeroku
