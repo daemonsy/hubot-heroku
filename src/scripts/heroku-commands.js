@@ -19,7 +19,7 @@
 //   hubot heroku config <app> - Get config keys for the app. Values not given for security
 //   hubot heroku config:set <app> <KEY=value> - Set KEY to value. Case sensitive and overrides present key
 //   hubot heroku config:unset <app> <KEY> - Unsets KEY, does not throw error if key is not present
-//   hubot heroku run rake <app> <task> - Runs a specific rake task
+//   hubot heroku run <command> <app> <task> - Runs a one off task. Only rake and thor is allowed currently
 //   hubot heroku ps:scale <app> <type>=<size>(:<quantity>) - Scales dyno quantity up or down
 //
 // Author:
@@ -28,6 +28,7 @@
 const Heroku = require('heroku-client');
 const objectToMessage = require("../object-to-message");
 const responder = require("../responder");
+const commandsWhitelist = require(process.cwd() + "/src/values/commands-whitelist");
 
 let heroku = new Heroku({ token: process.env.HUBOT_HEROKU_API_KEY });
 const _ = require('lodash');
@@ -259,22 +260,25 @@ module.exports = function(robot) {
     heroku.patch(`/apps/${appName}/config-vars`, {body: keyPair}).then(response => responder(msg).say(`Heroku: ${key} has been unset`));
   });
 
-  // Run Rake
-  robot.respond(/heroku run rake (.+) (.+)$/i, function(msg) {
-    let appName = msg.match[1];
-    let task = msg.match[2];
 
+  // Run <command> <task> <app>
+  robot.respond(/heroku run (\w+) (.+) (?:--app .+|(.+)$)/i, function(msg) {
+    let command = msg.match[1].toLowerCase();
+    let task = msg.match[2].replace("--app", "").trim();
+    let appName = msg.match[3];
+
+    if (!commandsWhitelist.includes(command)) { return responder(msg).say("only rake and thor is supported"); }
     if (!auth(msg, appName)) { return; }
 
-    responder(msg).say(`Telling Heroku to run \`rake ${task}\` on ${appName}`);
+    responder(msg).say(`Telling Heroku to run \`${command} ${task}\` on ${appName}`);
 
     heroku.post(`/apps/${appName}/dynos`, {
       body: {
-        command: `rake ${task}`,
+        command: `${command} ${task}`,
         attach: false
       }
     }).then(dyno => {
-      responder(msg).say(`Heroku: Running \`rake ${task}\` for ${appName}`);
+      responder(msg).say(`Heroku: Running \`${command} ${task}\` for ${appName}`);
 
       return heroku.post(`/apps/${appName}/log-sessions`, {
         body: {
