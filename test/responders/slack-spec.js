@@ -2,7 +2,6 @@ const slackResponder = require(process.cwd() + "/src/responders/slack");
 let { expect } = chai;
 
 describe("Slack Responder", () => {
-  console.log(slackResponder)
   describe("say", () => {
     it("sets the thread_ts to message.id for a first threaded reply", () => {
       let msg = {
