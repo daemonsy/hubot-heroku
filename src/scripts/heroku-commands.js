@@ -125,7 +125,7 @@ module.exports = function(robot) {
         }
       }
 
-      return responder(msg).say(output.join("\n"));
+      responder(msg).say(output.join("\n"));
     });
   });
 
@@ -137,7 +137,7 @@ module.exports = function(robot) {
 
     responder(msg).say(`Getting releases for ${appName}`);
 
-    return heroku.get(`/apps/${appName}/releases`).then((releases) => {
+    heroku.get(`/apps/${appName}/releases`).then((releases) => {
       let output = [];
       if (releases) {
         output.push(`Recent releases of ${appName}`);
@@ -147,7 +147,7 @@ module.exports = function(robot) {
         }
       }
 
-      return responder(msg).say(output.join("\n"));
+      responder(msg).say(output.join("\n"));
     });
   });
 
@@ -166,7 +166,7 @@ module.exports = function(robot) {
 
         if (!release) { throw `Version ${version} not found for ${appName} :(`; }
 
-        return heroku.post(`/apps/${appName}/releases`, { body: { release: release.id } })
+        return heroku.post(`/apps/${appName}/releases`, { body: { release: release.id } });
       }).then(release => responder(msg).say(`Success! v${release.version} -> Rollback to ${version}`))
         .catch(error => responder(msg).say(error));
     }
@@ -183,9 +183,9 @@ module.exports = function(robot) {
     responder(msg).say(`Telling Heroku to restart ${appName}${dynoNameText}`);
 
     if (!dynoName) {
-      return heroku.delete(`/apps/${appName}/dynos`).then(app => responder(msg).say(`Heroku: Restarting ${appName}${dynoNameText}`));
+      heroku.delete(`/apps/${appName}/dynos`).then(app => responder(msg).say(`Heroku: Restarting ${appName}${dynoNameText}`));
     } else {
-      return heroku.delete(`/apps/${appName}/dynos/${dynoName}`).then(app => responder(msg).say(`Heroku: Restarting ${appName}${dynoNameText}`));
+      heroku.delete(`/apps/${appName}/dynos/${dynoName}`).then(app => responder(msg).say(`Heroku: Restarting ${appName}${dynoNameText}`));
     }
   });
 
@@ -197,7 +197,7 @@ module.exports = function(robot) {
 
     responder(msg).say(`Telling Heroku to migrate ${appName}`);
 
-    return heroku.post(`/apps/${appName}/dynos`, {
+    heroku.post(`/apps/${appName}/dynos`, {
       body: {
         command: "rake db:migrate",
         attach: false
@@ -222,9 +222,9 @@ module.exports = function(robot) {
 
     responder(msg).say(`Getting config keys for ${appName}`);
 
-    return heroku.get(`/apps/${appName}/config-vars`).then((configVars) => {
+    heroku.get(`/apps/${appName}/config-vars`).then((configVars) => {
       let listOfKeys = configVars && Object.keys(configVars).join(", ");
-      return responder(msg).say(listOfKeys);
+      responder(msg).say(listOfKeys);
     });
   });
 
@@ -256,7 +256,7 @@ module.exports = function(robot) {
 
     keyPair[key] = null;
 
-    return heroku.patch(`/apps/${appName}/config-vars`, {body: keyPair}).then(response => responder(msg).say(`Heroku: ${key} has been unset`));
+    heroku.patch(`/apps/${appName}/config-vars`, {body: keyPair}).then(response => responder(msg).say(`Heroku: ${key} has been unset`));
   });
 
   // Run Rake
@@ -268,7 +268,7 @@ module.exports = function(robot) {
 
     responder(msg).say(`Telling Heroku to run \`rake ${task}\` on ${appName}`);
 
-    return heroku.post(`/apps/${appName}/dynos`, {
+    heroku.post(`/apps/${appName}/dynos`, {
       body: {
         command: `rake ${task}`,
         attach: false
