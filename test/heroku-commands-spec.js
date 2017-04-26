@@ -344,7 +344,6 @@ describe("Heroku Commands", () => {
     it("runs the command and task", done => {
       room.user.say("Damon", "hubot heroku run rake some:task --app shield-global-watch").then(() => {
         expect(room.messages[1][1]).to.equal("@Damon Telling Heroku to run `rake some:task` on shield-global-watch");
-
         expect(room.messages[2][1]).to.equal("@Damon Heroku: Running `rake some:task` for shield-global-watch");
 
         done();
@@ -362,6 +361,15 @@ describe("Heroku Commands", () => {
     it("returns the logplex_url", done => {
       room.user.say("Damon", "hubot heroku run rake some:task --app shield-global-watch").then(() => {
         expect(room.messages[3][1]).to.equal("@Damon View logs at: https://logplex.heroku.com/sessions/9d4f18cd-d9k8-39a5-ddef-a47dfa443z74?srv=1418011757");
+
+        done();
+      });
+    });
+
+    it("supports both the older format of the app name as the last argument", done => {
+      room.user.say("Damon", "hubot heroku run rake some:task shield-global-watch").then(() => {
+        expect(room.messages[1][1]).to.equal("@Damon Telling Heroku to run `rake some:task` on shield-global-watch");
+        expect(room.messages[2][1]).to.equal("@Damon Heroku: Running `rake some:task` for shield-global-watch");
 
         done();
       });
