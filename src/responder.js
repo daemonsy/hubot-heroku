@@ -7,7 +7,7 @@ const RESPONDERS = {
 }
 
 module.exports = function(msg) {
-  let responder = RESPONDERS[msg.adapterName] || RESPONDERS.default;
+  let responder = RESPONDERS[msg.robot.adapterName] || RESPONDERS.default;
 
   return responder(msg);
 }

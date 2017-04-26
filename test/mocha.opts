@@ -1,4 +1,4 @@
 --require coffee-script/register
 --compilers coffee:coffee-script/register
---timeout 500
+--timeout 800
 --recursive
