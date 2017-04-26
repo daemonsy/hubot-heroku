@@ -28,7 +28,7 @@
 const Heroku = require('heroku-client');
 const objectToMessage = require("../object-to-message");
 const responder = require("../responder");
-const commandsWhitelist = require(process.cwd() + "/src/values/commands-whitelist");
+const commandsWhitelist = require("../values/commands-whitelist");
 
 let heroku = new Heroku({ token: process.env.HUBOT_HEROKU_API_KEY });
 const _ = require('lodash');
