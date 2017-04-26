@@ -27,6 +27,7 @@
 
 const Heroku = require('heroku-client');
 const objectToMessage = require("../object-to-message");
+const responder = require("../responder");
 
 let heroku = new Heroku({ token: process.env.HUBOT_HEROKU_API_KEY });
 const _ = require('lodash');
@@ -44,7 +45,7 @@ module.exports = function(robot) {
     let isAdmin = robot.auth.hasRole(msg.envelope.user, 'admin');
 
     if (useAuth && !(hasRole || isAdmin)) {
-      msg.reply(`Access denied. You must have this role to use this command: ${role}`);
+      responder(msg).say(`Access denied. You must have this role to use this command: ${role}`);
       return false;
     }
     return true;
@@ -67,9 +68,9 @@ module.exports = function(robot) {
     if (msg.match[2].length > 0) { searchName = msg.match[2]; }
 
     if (searchName) {
-      msg.reply(`Listing apps matching: ${searchName}`);
+      responder(msg).say(`Listing apps matching: ${searchName}`);
     } else {
-      msg.reply("Listing all apps available...");
+      responder(msg).say("Listing all apps available...");
     }
 
     return heroku.get(`/apps`).then((list) => {
@@ -77,22 +78,20 @@ module.exports = function(robot) {
 
       let result = list.length > 0 ? list.map(app => objectToMessage(app, "appShortInfo")).join("\n\n") : "No apps found";
 
-      return respondToUser(msg, null, result);
+      return responder(msg).say(result);
     });
   });
 
   // App Info
   robot.respond(/heroku info (.*)/i, function(msg) {
     if (!auth(msg, appName)) { return; }
-    console.log(msg)
 
     var appName = msg.match[1];
-
-    msg.reply(`Getting information about ${appName}`);
+    responder(msg).say(`Getting information about ${appName}`);
 
     return heroku.get(`/apps/${appName}`).then(function(info) {
       let successMessage = `\n${objectToMessage(info, "info")}`;
-      return respondToUser(msg, null, successMessage);
+      return responder(msg).say(successMessage);
     });
   });
 
@@ -102,7 +101,7 @@ module.exports = function(robot) {
 
     if (!auth(msg, appName)) { return; }
 
-    msg.reply(`Getting dynos of ${appName}`);
+    responder(msg).say(`Getting dynos of ${appName}`);
 
     return heroku.get(`/apps/${appName}/dynos`).then((dynos) => {
       let output = [];
@@ -126,7 +125,7 @@ module.exports = function(robot) {
         }
       }
 
-      return respondToUser(msg, null, output.join("\n"));
+      return responder(msg).say(output.join("\n"));
     });
   });
 
@@ -136,7 +135,7 @@ module.exports = function(robot) {
 
     if (!auth(msg, appName)) { return; }
 
-    msg.reply(`Getting releases for ${appName}`);
+    responder(msg).say(`Getting releases for ${appName}`);
 
     return heroku.get(`/apps/${appName}/releases`).then((releases) => {
       let output = [];
@@ -148,7 +147,7 @@ module.exports = function(robot) {
         }
       }
 
-      return respondToUser(msg, null, output.join("\n"));
+      return responder(msg).say(output.join("\n"));
     });
   });
 
@@ -160,7 +159,7 @@ module.exports = function(robot) {
     if (!auth(msg, appName)) { return; }
 
     if (version.match(/v\d+$/)) {
-      msg.reply(`Rolling back to ${version}`);
+      responder(msg).say(`Rolling back to ${version}`);
 
       heroku.get(`/apps/${appName}/releases`).then(releases => {
         let release = _.find(releases, release => `v${release.version}` ===  version);
@@ -168,8 +167,8 @@ module.exports = function(robot) {
         if (!release) { throw `Version ${version} not found for ${appName} :(`; }
 
         return heroku.post(`/apps/${appName}/releases`, { body: { release: release.id } })
-      }).then(release => { respondToUser(msg, null, `Success! v${release.version} -> Rollback to ${version}`)})
-        .catch(error => msg.reply(error));
+      }).then(release => responder(msg).say(`Success! v${release.version} -> Rollback to ${version}`))
+        .catch(error => responder(msg).say(error));
     }
   });
 
@@ -181,12 +180,12 @@ module.exports = function(robot) {
 
     if (!auth(msg, appName)) { return; }
 
-    msg.reply(`Telling Heroku to restart ${appName}${dynoNameText}`);
+    responder(msg).say(`Telling Heroku to restart ${appName}${dynoNameText}`);
 
     if (!dynoName) {
-      return heroku.delete(`/apps/${appName}/dynos`).then((app) => respondToUser(msg, null, `Heroku: Restarting ${appName}`));
+      return heroku.delete(`/apps/${appName}/dynos`).then(app => responder(msg).say(`Heroku: Restarting ${appName}${dynoNameText}`));
     } else {
-      return heroku.delete(`/apps/${appName}/dynos/${dynoName}`).then((app) => respondToUser(msg, null, `Heroku: Restarting ${appName}${dynoNameText}`));
+      return heroku.delete(`/apps/${appName}/dynos/${dynoName}`).then(app => responder(msg).say(`Heroku: Restarting ${appName}${dynoNameText}`));
     }
   });
 
@@ -196,7 +195,7 @@ module.exports = function(robot) {
 
     if (!auth(msg, appName)) { return; }
 
-    msg.reply(`Telling Heroku to migrate ${appName}`);
+    responder(msg).say(`Telling Heroku to migrate ${appName}`);
 
     return heroku.post(`/apps/${appName}/dynos`, {
       body: {
@@ -204,7 +203,7 @@ module.exports = function(robot) {
         attach: false
       }
     }).then(dyno => {
-      respondToUser(msg, null, `Heroku: Running migrations for ${appName}`);
+      responder(msg).say(`Heroku: Running migrations for ${appName}`);
 
       return heroku.post(`/apps/${appName}/log-sessions`, {
         body: {
@@ -212,7 +211,7 @@ module.exports = function(robot) {
           tail: true
         }
       })
-    }).then(session => respondToUser(msg, null, `View logs at: ${session.logplex_url}`));
+    }).then(session => responder(msg).say(`View logs at: ${session.logplex_url}`));
   });
 
   // Config Vars
@@ -221,11 +220,11 @@ module.exports = function(robot) {
 
     if (!auth(msg, appName)) { return; }
 
-    msg.reply(`Getting config keys for ${appName}`);
+    responder(msg).say(`Getting config keys for ${appName}`);
 
     return heroku.get(`/apps/${appName}/config-vars`).then((configVars) => {
       let listOfKeys = configVars && Object.keys(configVars).join(", ");
-      return respondToUser(msg, null, listOfKeys);
+      return responder(msg).say(listOfKeys);
     });
   });
 
@@ -238,12 +237,12 @@ module.exports = function(robot) {
 
     if (!auth(msg, appName)) { return; }
 
-    msg.reply(`Setting config ${key} => ${value}`);
+    responder(msg).say(`Setting config ${key} => ${value}`);
 
     keyPair[key] = value;
 
     heroku.patch(`/apps/${appName}/config-vars`, { body: keyPair })
-      .then(configVars => respondToUser(msg, null, `Heroku: ${key} is set to ${configVars[key]}`));
+      .then(configVars => responder(msg).say(`Heroku: ${key} is set to ${configVars[key]}`));
   })
 
   robot.respond(/heroku config:unset (.*) (\w+)$/i, function(msg) {
@@ -253,11 +252,11 @@ module.exports = function(robot) {
 
     if (!auth(msg, appName)) { return; }
 
-    msg.reply(`Unsetting config ${key}`);
+    responder(msg).say(`Unsetting config ${key}`);
 
     keyPair[key] = null;
 
-    return heroku.patch(`/apps/${appName}/config-vars`, {body: keyPair}).then((response) => respondToUser(msg, null, `Heroku: ${key} has been unset`));
+    return heroku.patch(`/apps/${appName}/config-vars`, {body: keyPair}).then(response => responder(msg).say(`Heroku: ${key} has been unset`));
   });
 
   // Run Rake
@@ -267,7 +266,7 @@ module.exports = function(robot) {
 
     if (!auth(msg, appName)) { return; }
 
-    msg.reply(`Telling Heroku to run \`rake ${task}\` on ${appName}`);
+    responder(msg).say(`Telling Heroku to run \`rake ${task}\` on ${appName}`);
 
     return heroku.post(`/apps/${appName}/dynos`, {
       body: {
@@ -275,7 +274,7 @@ module.exports = function(robot) {
         attach: false
       }
     }).then(dyno => {
-      respondToUser(msg, null, `Heroku: Running \`rake ${task}\` for ${appName}`);
+      responder(msg).say(`Heroku: Running \`rake ${task}\` for ${appName}`);
 
       return heroku.post(`/apps/${appName}/log-sessions`, {
         body: {
@@ -283,7 +282,7 @@ module.exports = function(robot) {
           tail: true
         }
       })
-    }).then(session => respondToUser(msg, null, `View logs at: ${session.logplex_url}`));
+    }).then(session => responder(msg).say(`View logs at: ${session.logplex_url}`));
   });
 
   // Formations
@@ -297,10 +296,10 @@ module.exports = function(robot) {
 
     if (!auth(msg, appName)) { return; }
 
-    msg.reply(`Telling Heroku to scale ${type} dynos of ${appName}`);
+    responder(msg).say(`Telling Heroku to scale ${type} dynos of ${appName}`);
 
     heroku.patch(`/apps/${appName}/formation/${type}`, { body: parameters }).then(formation => {
-      respondToUser(msg, null, `Heroku: now running ${formation.type} at ${formation.quantity}:${formation.size}`);
+      responder(msg).say(`Heroku: now running ${formation.type} at ${formation.quantity}:${formation.size}`);
     });
   });
 };
