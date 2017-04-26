@@ -36,7 +36,7 @@ describe("Heroku Commands", () => {
     expect(commands).to.include("hubot heroku config <app> - Get config keys for the app. Values not given for security");
     expect(commands).to.include("hubot heroku config:set <app> <KEY=value> - Set KEY to value. Case sensitive and overrides present key");
     expect(commands).to.include("hubot heroku config:unset <app> <KEY> - Unsets KEY, does not throw error if key is not present");
-    expect(commands).to.include("hubot heroku run rake <app> <task> - Runs a specific rake task");
+    expect(commands).to.include("hubot heroku run <command> <app> <task> - Runs a one off task. Only rake and thor is allowed currently");
     expect(commands).to.include("hubot heroku ps:scale <app> <type>=<size>(:<quantity>) - Scales dyno quantity up or down");
   });
 
@@ -326,7 +326,7 @@ describe("Heroku Commands", () => {
     })
   );
 
-  describe("heroku run rake <app>", () => {
+  describe("heroku run <command> <app> <task>", () => {
     beforeEach(() => {
       mockHeroku
         .post("/apps/shield-global-watch/dynos", {
@@ -341,19 +341,35 @@ describe("Heroku Commands", () => {
         }).replyWithFile(200, __dirname + "/fixtures/log-session.json");
     });
 
-    it("runs migrations", done => {
-      room.user.say("Damon", "hubot heroku run rake shield-global-watch some:task").then(() => {
+    it("runs the command and task", done => {
+      room.user.say("Damon", "hubot heroku run rake some:task --app shield-global-watch").then(() => {
         expect(room.messages[1][1]).to.equal("@Damon Telling Heroku to run `rake some:task` on shield-global-watch");
-
         expect(room.messages[2][1]).to.equal("@Damon Heroku: Running `rake some:task` for shield-global-watch");
 
         done();
       })
     });
 
+    it("only allows commands in the whitelist", done => {
+      room.user.say("Damon", "hubot heroku run rails console shield-global-watch").then(() => {
+        expect(room.messages[1][1]).to.contain("only rake and thor is supported");
+
+        done();
+      });
+    });
+
     it("returns the logplex_url", done => {
-      room.user.say("Damon", "hubot heroku run rake shield-global-watch some:task").then(() => {
+      room.user.say("Damon", "hubot heroku run rake some:task --app shield-global-watch").then(() => {
         expect(room.messages[3][1]).to.equal("@Damon View logs at: https://logplex.heroku.com/sessions/9d4f18cd-d9k8-39a5-ddef-a47dfa443z74?srv=1418011757");
+
+        done();
+      });
+    });
+
+    it("supports both the older format of the app name as the last argument", done => {
+      room.user.say("Damon", "hubot heroku run rake some:task shield-global-watch").then(() => {
+        expect(room.messages[1][1]).to.equal("@Damon Telling Heroku to run `rake some:task` on shield-global-watch");
+        expect(room.messages[2][1]).to.equal("@Damon Heroku: Running `rake some:task` for shield-global-watch");
 
         done();
       });
