@@ -10,9 +10,10 @@ process.env.HUBOT_AUTH_ADMIN = 1;
 let { expect } = chai;
 
 describe("Heroku Commands", () => {
+  let herokuURL = "https://api.heroku.com";
   let helper = new HubotHelper("../index.coffee");
   let room = null;
-  let mockHeroku = nock("https://api.heroku.com");
+  let mockHeroku = nock(herokuURL);
 
   beforeEach(() => room = helper.createRoom());
 
@@ -107,12 +108,12 @@ describe("Heroku Commands", () => {
 
   describe("heroku releases <app>", () => {
     it("gets the 10 recent releases", done => {
-      mockHeroku
-        .get("/apps/shield-global-watch/releases")
-        .replyWithFile(200, __dirname + "/fixtures/releases.json");
+      mockHeroku.get("/apps/shield-global-watch/releases")
+        .matchHeader("range",  "version ..; order=desc,max=10")
+        .replyWithFile(206, __dirname + "/fixtures/releases.json");
 
-      room.user.say("Damon", "hubot heroku releases shield-global-watch").then(() => {
-        expect(room.messages[1][1]).to.equal("@Damon Getting releases for shield-global-watch");
+      room.user.say("Damon", "hubot heroku releases --app shield-global-watch").then(() => {
+        expect(room.messages[1][1]).to.equal("@Damon Getting recent releases for shield-global-watch");
         expect(room.messages[2][1]).to.include("@Damon Recent releases of shield-global-watch\nv352 - Promote shield-global-watch v287 fb2b5ff - phil@shield.com");
 
         done();

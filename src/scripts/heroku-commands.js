@@ -131,14 +131,13 @@ module.exports = function(robot) {
   });
 
   // Releases
-  robot.respond(/heroku releases (.*)$/i, function(msg) {
-    let appName = msg.match[1];
+  robot.respond(/heroku releases (--app .+|.+$)/i, function(msg) {
+    let appName = msg.match[1].replace("--app", "").trim();
 
     if (!auth(msg, appName)) { return; }
 
-    responder(msg).say(`Getting releases for ${appName}`);
-
-    heroku.get(`/apps/${appName}/releases`).then((releases) => {
+    responder(msg).say(`Getting recent releases for ${appName}`);
+    heroku.get(`/apps/${appName}/releases`, { partial: true, headers: { "Range": "version ..; order=desc,max=10" } }).then(releases => {
       let output = [];
       if (releases) {
         output.push(`Recent releases of ${appName}`);
