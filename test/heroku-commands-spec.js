@@ -114,7 +114,8 @@ describe("Heroku Commands", () => {
 
       room.user.say("Damon", "hubot heroku releases --app shield-global-watch").then(() => {
         expect(room.messages[1][1]).to.equal("@Damon Getting recent releases for shield-global-watch");
-        expect(room.messages[2][1]).to.include("@Damon Recent releases of shield-global-watch\nv352 - Promote shield-global-watch v287 fb2b5ff - phil@shield.com");
+        expect(room.messages[2][1]).to.contain("Recent releases of shield-global-watch");
+        expect(room.messages[2][1]).to.contain("v352 : Promote shield-global-watch v287 fb2b5ff by phil@shield.com - ");
 
         done();
       });

@@ -143,11 +143,15 @@ module.exports = function(robot) {
         output.push(`Recent releases of ${appName}`);
 
         for (let release of Array.from(releases.sort((a, b) => b.version - a.version).slice(0, 10))) {
-          output.push(`v${release.version} - ${release.description} - ${release.user.email} -  ${release.created_at}`);
+          let shortenedDescription = release.description;
+          if (release.description.length > 40) {
+            shortenedDescription = `${release.description.substring(0,20)}...`
+          }
+          output.push(`v${release.version} : ${shortenedDescription} by ${release.user.email} - ${moment(release.created_at).fromNow()}`);
         }
       }
 
-      responder(msg).say(output.join("\n"));
+      responder(msg).say("```\n" + output.join("\n") + "```");
     });
   });
 
