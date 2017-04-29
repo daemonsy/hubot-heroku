@@ -29,42 +29,45 @@ const Heroku = require('heroku-client');
 const objectToMessage = require("../object-to-message");
 const responder = require("../responder");
 const commandsWhitelist = require("../values/commands-whitelist");
-
-let heroku = new Heroku({ token: process.env.HUBOT_HEROKU_API_KEY });
 const _ = require('lodash');
 const moment = require('moment');
-let useAuth = (process.env.HUBOT_HEROKU_USE_AUTH || '').trim().toLowerCase() === 'true';
 
-module.exports = function(robot) {
-  let auth = function(msg, appName) {
-    let hasRole, role;
-    if (appName) {
-      role = `heroku-${appName}`;
-      hasRole = robot.auth.hasRole(msg.envelope.user, role);
-    }
+module.exports = robot => {
+  let tokenKeyForUserId = userId =>`hubot-heroku-token-${userId}`;
+  let getUserToken = userId => robot.brain.get(tokenKeyForUserId(userId));
 
-    let isAdmin = robot.auth.hasRole(msg.envelope.user, 'admin');
-
-    if (useAuth && !(hasRole || isAdmin)) {
-      responder(msg).say(`Access denied. You must have this role to use this command: ${role}`);
-      return false;
-    }
-    return true;
-  };
-
-  let respondToUser = function(robotMessage, error, successMessage) {
-    if (error) {
-      console.log("There is error!", error);
-      return robotMessage.reply(`Shucks. An error occurred. ${error.statusCode} - ${error.body.message}`);
-    } else {
-      return robotMessage.reply(successMessage);
+  let errorHandler = msg => {
+    return function(error) {
+      if (!getUserToken(msg.envelope.user.id)) {
+        responder(msg).say(`Set your heroku API key with me to run commands.
+        Visit https://dashboard.heroku.com/account to get one.
+        Use \`heroku token:set <api_key>\` in a private message to me.`)
+      } else {
+        responder(msg).say(`Shucks. An error occurred: ${error.statusCode} - ${error.body.message}`);
+      }
     }
   };
+
+  robot.respond(/heroku token:unset$/, msg => {
+    robot.brain.remove(tokenKeyForUserId(msg.envelope.user.id));
+
+    responder(msg).say(`I removed your token but it saddens me to do so.`);
+  });
+
+  robot.respond(/heroku token:set (.*)$/, msg => {
+    let token = msg.match[1];
+    let maskedToken = token.substring(token.length - 4);
+
+    robot.brain.set(tokenKeyForUserId(msg.envelope.user.id), token);
+
+    responder(msg).say(`I will use the token ...${maskedToken} for heroku commands`);
+  });
 
   // App List
   robot.respond(/(heroku list apps)\s?(.*)/i, function(msg) {
     let searchName;
-    if (!auth(msg)) { return; }
+    let token = getUserToken(msg.envelope.user.id);
+    let heroku = new Heroku({ token: token });
 
     if (msg.match[2].length > 0) { searchName = msg.match[2]; }
 
@@ -74,37 +77,38 @@ module.exports = function(robot) {
       responder(msg).say("Listing all apps available...");
     }
 
-    return heroku.get(`/apps`).then((list) => {
+    heroku.get(`/apps`).then((list) => {
       list = list.filter(item => item.name.match(new RegExp(searchName, "i")));
 
       let result = list.length > 0 ? list.map(app => objectToMessage(app, "appShortInfo")).join("\n\n") : "No apps found";
 
       return responder(msg).say(result);
-    });
+    }).catch(errorHandler(msg));
   });
 
   // App Info
   robot.respond(/heroku info (.*)/i, function(msg) {
-    if (!auth(msg, appName)) { return; }
+    let token = getUserToken(msg.envelope.user.id);
+    let heroku = new Heroku({ token: token });
 
     var appName = msg.match[1];
     responder(msg).say(`Getting information about ${appName}`);
 
-    return heroku.get(`/apps/${appName}`).then(function(info) {
+    heroku.get(`/apps/${appName}`).then(function(info) {
       let successMessage = `\n${objectToMessage(info, "info")}`;
       return responder(msg).say(successMessage);
-    });
+    }).catch(errorHandler(msg));
   });
 
   // Dynos
   robot.respond(/heroku dynos (.*)/i, function(msg) {
     let appName = msg.match[1];
-
-    if (!auth(msg, appName)) { return; }
+    let token = getUserToken(msg.envelope.user.id);
+    let heroku = new Heroku({ token: token });
 
     responder(msg).say(`Getting dynos of ${appName}`);
 
-    return heroku.get(`/apps/${appName}/dynos`).then((dynos) => {
+    heroku.get(`/apps/${appName}/dynos`).then((dynos) => {
       let output = [];
       if (dynos) {
         output.push(`Dynos of ${appName}`);
@@ -127,14 +131,14 @@ module.exports = function(robot) {
       }
 
       responder(msg).say(output.join("\n"));
-    });
+    }).catch(errorHandler(msg));
   });
 
   // Releases
   robot.respond(/heroku releases (--app .+|.+$)/i, function(msg) {
     let appName = msg.match[1].replace("--app", "").trim();
-
-    if (!auth(msg, appName)) { return; }
+    let token = getUserToken(msg.envelope.user.id);
+    let heroku = new Heroku({ token: token });
 
     responder(msg).say(`Getting recent releases for ${appName}`);
     heroku.get(`/apps/${appName}/releases`, { partial: true, headers: { "Range": "version ..; order=desc,max=10" } }).then(releases => {
@@ -152,7 +156,7 @@ module.exports = function(robot) {
       }
 
       responder(msg).say("```\n" + output.join("\n") + "```");
-    });
+    }).catch(errorHandler(msg));
   });
 
   // Rollback
@@ -160,7 +164,8 @@ module.exports = function(robot) {
     let appName = msg.match[1];
     let version = msg.match[2];
 
-    if (!auth(msg, appName)) { return; }
+    let token = getUserToken(msg.envelope.user.id);
+    let heroku = new Heroku({ token: token });
 
     if (version.match(/v\d+$/)) {
       responder(msg).say(`Rolling back to ${version}`);
@@ -182,7 +187,8 @@ module.exports = function(robot) {
     let dynoName = msg.match[2];
     let dynoNameText = dynoName ? ` ${dynoName}` : '';
 
-    if (!auth(msg, appName)) { return; }
+    let token = getUserToken(msg.envelope.user.id);
+    let heroku = new Heroku({ token: token });
 
     responder(msg).say(`Telling Heroku to restart ${appName}${dynoNameText}`);
 
@@ -197,7 +203,8 @@ module.exports = function(robot) {
   robot.respond(/heroku migrate (.*)/i, function(msg) {
     let appName = msg.match[1];
 
-    if (!auth(msg, appName)) { return; }
+    let token = getUserToken(msg.envelope.user.id);
+    let heroku = new Heroku({ token: token });
 
     responder(msg).say(`Telling Heroku to migrate ${appName}`);
 
@@ -222,7 +229,8 @@ module.exports = function(robot) {
   robot.respond(/heroku config (.*)$/i, function(msg) {
     let appName = msg.match[1];
 
-    if (!auth(msg, appName)) { return; }
+    let token = getUserToken(msg.envelope.user.id);
+    let heroku = new Heroku({ token: token });
 
     responder(msg).say(`Getting config keys for ${appName}`);
 
@@ -239,7 +247,8 @@ module.exports = function(robot) {
     let key     = msg.match[2];
     let value   = msg.match[4] || msg.match[5] || msg.match[6]; // :sad_panda:
 
-    if (!auth(msg, appName)) { return; }
+    let token = getUserToken(msg.envelope.user.id);
+    let heroku = new Heroku({ token: token });
 
     responder(msg).say(`Setting config ${key} => ${value}`);
 
@@ -254,7 +263,8 @@ module.exports = function(robot) {
     let appName = msg.match[1];
     let key     = msg.match[2];
 
-    if (!auth(msg, appName)) { return; }
+    let token = getUserToken(msg.envelope.user.id);
+    let heroku = new Heroku({ token: token });
 
     responder(msg).say(`Unsetting config ${key}`);
 
@@ -271,7 +281,8 @@ module.exports = function(robot) {
     let appName = msg.match[3];
 
     if (!commandsWhitelist.includes(command)) { return responder(msg).say("only rake and thor is supported"); }
-    if (!auth(msg, appName)) { return; }
+    let token = getUserToken(msg.envelope.user.id);
+    let heroku = new Heroku({ token: token });
 
     responder(msg).say(`Telling Heroku to run \`${command} ${task}\` on ${appName}`);
 
@@ -301,7 +312,8 @@ module.exports = function(robot) {
 
     if (msg.match[4]) { parameters.size = msg.match[4].substring(1); }
 
-    if (!auth(msg, appName)) { return; }
+    let token = getUserToken(msg.envelope.user.id);
+    let heroku = new Heroku({ token: token });
 
     responder(msg).say(`Telling Heroku to scale ${type} dynos of ${appName}`);
 
